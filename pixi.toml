@@ -13,12 +13,16 @@ onboard = { features = ["pre-commit", "gh-cli", "onboard"], solve-group = "defau
 
 # The project dependencies
 [dependencies]
+python = ">=3.11"
+pytest = ">=9.1.1,<10"
 
 # The project dependencies from PyPI
 [pypi-dependencies]
+llmoxie-analysis = { path = ".", editable = true }
 
 # The main project tasks
 [tasks]
+test = { cmd = "pytest", description = "Run the test suite with pytest" }
 
 # GitHub CLI feature for interacting with GitHub from the command line
 [feature.gh-cli.dependencies]
