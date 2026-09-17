@@ -84,6 +84,7 @@ Run `pixi task list` to see all available tasks:
 - `pre-commit-install`: Install git hooks
 - `pre-commit`: Run checks on staged files
 - `pre-commit-all`: Run checks on all files
+- `test`: Run the `llmoxie_analysis` test suite with pytest
 - `ssec-setup`: Set up ssec CLI completion (onboard env only)
 - `onboard`: Full onboarding process (onboard env only)
 
