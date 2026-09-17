@@ -32,7 +32,7 @@ no application code — it serves as a starting point for new projects.
 │   ├── dependabot.yml           # Dependabot config for GitHub Actions
 │   ├── pull_request_template.md # PR template (requires pre-commit checks)
 │   ├── release.yml              # Release notes configuration
-│   ├── workflows/               # GitHub Actions (zizmor workflow linting)
+│   ├── workflows/               # GitHub Actions (zizmor workflow linting, Copilot agent setup)
 │   └── ISSUE_TEMPLATE/          # Issue templates (bug, feature, docs, onboard, etc.)
 ├── .pre-commit-config.yaml      # Pre-commit hook configuration
 ├── pixi.toml                    # **PRIMARY CONFIG**: Dependencies, tasks, features
@@ -53,6 +53,12 @@ no application code — it serves as a starting point for new projects.
 [zizmor](https://github.com/zizmorcore/zizmor) static analysis to lint workflow
 files for security issues. Changes to anything under `.github/workflows/` must
 keep this check passing.
+
+**Copilot cloud agent:** `.github/workflows/copilot-setup-steps.yml` prepares
+the GitHub Copilot coding agent's environment (pixi install from `pixi.lock`,
+pre-commit hook environments). Copilot reads `AGENTS.md` and `.agents/skills/`
+on its own; keep the pinned `pixi-version` in sync with
+`.devcontainer/Dockerfile`.
 
 **Pre-commit.ci Integration:** The `.pre-commit-config.yaml` includes a `ci:`
 section, suggesting integration with https://pre-commit.ci for automated PR
