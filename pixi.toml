@@ -1,7 +1,7 @@
 [workspace]
 # Project metadata and basic configuration
 authors = ["Cordero Core <cdcore09@gmail.com>"] # Project authors
-channels = ["conda-forge"] # Conda channels for dependencies
+channels = ["https://prefix.dev/conda-forge", "https://prefix.dev/lsetiawan/uw-ssec"] # Conda channels for dependencies
 name = "llmoxie-analysis" # Project name
 platforms = ["osx-arm64", "linux-64", "linux-aarch64"] # Supported platforms for development and deployment
 version = "0.1.0" # Project version
@@ -15,6 +15,7 @@ onboard = { features = ["pre-commit", "gh-cli", "onboard"], solve-group = "defau
 [dependencies]
 python = ">=3.11"
 pytest = ">=9.1.1,<10"
+okf-agent-memory = ">=0.3.1,<0.4"
 
 # The project dependencies from PyPI
 [pypi-dependencies]
