@@ -1,3 +1,6 @@
 [submodule "reference/llmoxie"]
 	path = reference/llmoxie
 	url = https://github.com/uw-ssec/llmoxie
+[submodule "reference/ceil-dlp"]
+	path = reference/ceil-dlp
+	url = https://github.com/betolink/ceil-dlp.git
