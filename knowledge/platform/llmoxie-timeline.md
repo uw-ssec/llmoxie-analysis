@@ -4,7 +4,7 @@ title: LLMoxie Development Timeline
 description: How the upstream repository evolved across 99 commits from a Rubin-era RAG prototype into a LiteLLM control plane with data-lake logging and session grouping.
 tags: [llmoxie, history, timeline, provenance]
 sources:
-  - resource: uw-ssec/llmoxie git history, 99 commits, 763da8d..ec5d8b2
+  - resource: reference/llmoxie git history, 99 commits, 763da8d..ec5d8b2
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

@@ -6,7 +6,7 @@ tags: [caveat, data-quality, sessions, end-user, coverage]
 governance: constraint
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-  - resource: uw-ssec/llmoxie src/llmaven/data/reader.py, _parse_end_user()
+  - resource: reference/llmoxie/src/llmaven/data/reader.py, _parse_end_user()
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

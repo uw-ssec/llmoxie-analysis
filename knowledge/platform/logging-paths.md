@@ -5,7 +5,7 @@ description: "LLMoxie records every request twice over — to Azure Data Lake as
 tags: [logging, adls, litellm, data-source, fidelity]
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-  - resource: uw-ssec/llmoxie infrastructure/resources/adl_logger.py
+  - resource: reference/llmoxie/src/llmaven/infrastructure/resources/adl_logger.py
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

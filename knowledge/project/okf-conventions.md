@@ -3,7 +3,7 @@ type: Reference
 title: OKF Bundle Conventions
 description: "The folder layout, frontmatter contract, producer-gate traps, and validation gates this knowledge bundle is maintained under."
 tags: [okf, conventions, frontmatter, validation, documentation]
-generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T18:14:29Z" }
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-18T21:40:11Z" }
 sources:
   - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/1"
   - resource: llmoxie-analysis .claude/skills/okf-memory/SKILL.md
@@ -69,8 +69,12 @@ concept ends up with zero recorded sources while the gate stays quiet.
 ```yaml
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-  - resource: "uw-ssec/llmoxie src/llmaven/data/reader.py"
+  - resource: reference/llmoxie/src/llmaven/data/reader.py
 ```
+
+Cite upstream LLMoxie code by its path in the `reference/llmoxie` submodule,
+not by the GitHub repo name, so the source resolves in the checkout at the
+pinned commit. Commits and history are cited as `reference/llmoxie commit <sha>`.
 
 `generated.by` must be an actor — either `scheme:something` or
 `namespace/name`. A bare `agent` or `human` is not, and neither is a

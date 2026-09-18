@@ -5,8 +5,8 @@ description: "Requests made through the OpenAI Responses API return output under
 tags: [caveat, responses-api, copilot, missing-data, agent-type]
 governance: constraint
 sources:
-  - resource: uw-ssec/llmoxie _adls_record_to_spend_log_shape() docstring
-  - resource: uw-ssec/llmoxie src/llmaven/data/reader.py, _rows_from_record()
+  - resource: reference/llmoxie/src/llmaven/data/group_sessions.py, _adls_record_to_spend_log_shape() docstring
+  - resource: reference/llmoxie/src/llmaven/data/reader.py, _rows_from_record()
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 
