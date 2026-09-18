@@ -31,3 +31,5 @@ with `okf search "<keywords>"` rather than browsing these files.
 * [Caveats](caveats/index.md) - Properties of the data that will mislead anyone
   who does not know them.
 * [Pipeline](pipeline/index.md) - The design of the thing being built.
+* [Datasets](datasets/index.md) - Specific extracts and the rules for handling
+  them.

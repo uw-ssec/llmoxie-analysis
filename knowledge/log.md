@@ -15,6 +15,9 @@
 * **Creation**: Documented concept `pipeline/idempotency-design.md` (Idempotency: Manifest and Partition Overwrite).
 * **Creation**: Documented concept `pipeline/container-apps-job.md` (Scheduled Execution on Azure Container Apps).
 * **Creation**: Documented concept `pipeline/analytics-schema.md` (Analytics Schema — Four Tables).
+* **Creation**: Documented concept `datasets/pii-handling.md` (Handling This Data Without Touching PII).
+* **Creation**: Documented concept `datasets/jan-mar-2026-findings.md` (What Profiling the Jan–Mar 2026 Extract Proved).
+* **Creation**: Documented concept `datasets/jan-mar-2026-extract.md` (Jan–Mar 2026 Spend-Log Extract).
 * **Creation**: Documented concept `caveats/responses-api-gap.md` (Caveat: The Responses API Output Gap).
 * **Creation**: Documented concept `caveats/end-user-parsing.md` (Caveat: end_user Parsing Fragility).
 * **Creation**: Documented concept `caveats/dedup-vs-last-request.md` (Caveat: last_request_per_session vs deduplicate_messages).
