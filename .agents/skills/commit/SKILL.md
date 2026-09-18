@@ -60,15 +60,17 @@ the harness and the model id, joined by a colon:
 Assisted-by: <harness>:<model> [TOOL1] [TOOL2]
 ```
 
-`<harness>` is the coding agent (Claude Code, Codex CLI, Copilot CLI, OpenCode,
-...) and `<model>` is the model identifier it reports. `[TOOL1] [TOOL2]` are
-optional specialized analysis tools that contributed to the change (for example
-`mypy` when its report drove the fix); do not list basic development tools such
-as git, ruff-format, pytest, or editors. Examples:
+`<harness>` is the coding agent as a lowercase, hyphenated slug (`claude-code`,
+`codex-cli`, `copilot-cli`, `opencode`, ...) and `<model>` is the model
+identifier it reports, so `<harness>:<model>` is a single machine-readable token
+with no spaces. `[TOOL1] [TOOL2]` are optional specialized analysis tools that
+contributed to the change (for example `mypy` when its report drove the fix); do
+not list basic development tools such as git, ruff-format, pytest, or editors.
+Examples:
 
 ```
-Assisted-by: Claude Code:claude-fable-5-1
-Assisted-by: Codex CLI:gpt-5.3-codex mypy
+Assisted-by: claude-code:claude-fable-5-1
+Assisted-by: codex-cli:gpt-5.3-codex mypy
 ```
 
 Use the same harness and model string in the "AI assistance disclosure" section

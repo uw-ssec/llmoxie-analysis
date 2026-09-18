@@ -38,9 +38,10 @@ Resolves #\<issue-number>
 
 - [ ] This PR is AI-assisted
 
-**Tool / model / version:**
+**Harness / model:**
 
-<!-- e.g. Claude Sonnet 4.6 via Claude Code -->
+<!-- e.g. claude-code:claude-fable-5-1 — the same `<harness>:<model>` token
+     as the `Assisted-by:` trailer on the commits -->
 
 ## 🔍 Author verification
 
