@@ -20,9 +20,13 @@ with `okf search "<keywords>"` rather than browsing these files.
 
 ## Start here
 
+* [Read the caveats before trusting a number](caveats/index.md) — four
+  properties of this data that produce confidently wrong answers.
 ## Areas
 
 * [Platform](platform/index.md) - LLMoxie itself, the system whose request logs
   this project consumes.
 * [Upstream](upstream/index.md) - Prototype code inherited from LLMoxie that
   this project must fix or absorb.
+* [Caveats](caveats/index.md) - Properties of the data that will mislead anyone
+  who does not know them.

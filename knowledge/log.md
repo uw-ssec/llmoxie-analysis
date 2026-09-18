@@ -7,4 +7,8 @@
 * **Creation**: Documented concept `platform/llmoxie-platform.md` (LLMoxie Platform).
 * **Creation**: Documented concept `platform/litellm-spend-logs.md` (LiteLLM Spend Logs and infra extract).
 * **Creation**: Documented concept `platform/adls-logger.md` (AdlLogger — Azure Data Lake Logging).
+* **Creation**: Documented concept `caveats/responses-api-gap.md` (Caveat: The Responses API Output Gap).
+* **Creation**: Documented concept `caveats/end-user-parsing.md` (Caveat: end_user Parsing Fragility).
+* **Creation**: Documented concept `caveats/dedup-vs-last-request.md` (Caveat: last_request_per_session vs deduplicate_messages).
+* **Creation**: Documented concept `caveats/cost-token-double-counting.md` (Caveat: Cost and Token Double-Counting).
 * **Creation**: Initialized OKF v0.2 knowledge bundle.
