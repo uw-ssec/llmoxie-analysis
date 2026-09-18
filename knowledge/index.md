@@ -24,3 +24,5 @@ with `okf search "<keywords>"` rather than browsing these files.
 
 * [Platform](platform/index.md) - LLMoxie itself, the system whose request logs
   this project consumes.
+* [Upstream](upstream/index.md) - Prototype code inherited from LLMoxie that
+  this project must fix or absorb.
