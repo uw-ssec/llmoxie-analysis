@@ -90,7 +90,9 @@ Run `pixi task list` to see all available tasks:
 - `lint`: ruff lint and format check, no files modified
 - `typecheck`: mypy over `src/` and `tests/` (strict)
 - `build`: build wheel and sdist into `dist/`
-- `verify`: the quality gate — `pre-commit-all`, `typecheck`, `test`, `build`
+- `okf-validate`: `okf validate --strict --drift` over `knowledge/`
+- `verify`: the quality gate — `pre-commit-all`, `okf-validate`, `typecheck`,
+  `test`, `build`
 - `setup`: install git hooks and pull the `reference/` submodules
 - `ssec-setup`: Set up ssec CLI completion (onboard env only)
 - `onboard`: Full onboarding process (onboard env only)

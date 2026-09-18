@@ -32,12 +32,14 @@ test = { cmd = "pytest", description = "Run the test suite with pytest" }
 lint = { cmd = "ruff check . && ruff format --check .", description = "Lint and check formatting with ruff (no changes made)" }
 typecheck = { cmd = "mypy", description = "Type-check src/, tests/ and scripts/ with mypy (strict)" }
 build = { cmd = "python -m build --wheel --sdist --no-isolation --outdir dist", description = "Build the wheel and sdist into dist/" }
+okf-validate = { cmd = "okf validate --strict --drift", description = "Check the knowledge/ bundle; fails on errors and producer-gate findings, not on warnings" }
 verify = { depends-on = [
     "pre-commit-all",
+    "okf-validate",
     "typecheck",
     "test",
     "build",
-], description = "The quality gate: format+lint, type-check, tests, build. Must exit 0 before commit or PR" }
+], description = "The quality gate: format+lint, knowledge bundle, type-check, tests, build. Must exit 0 before commit or PR" }
 setup = { cmd = "git submodule update --init --recursive", depends-on = [
     "pre-commit-install",
 ], description = "One-time setup after pixi install: git hooks and the read-only reference/ submodules" }
