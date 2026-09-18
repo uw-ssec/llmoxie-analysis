@@ -19,5 +19,8 @@ dist/
 site/
 site_docs/
 
+# Obsidian vault settings, created when knowledge/ is opened as a vault
+knowledge/.obsidian/
+
 # MacOS
 .DS_Store
