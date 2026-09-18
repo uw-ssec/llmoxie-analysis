@@ -1,67 +1,54 @@
 ---
 type: Architecture
-title: The Docs Site Is Generated From This Bundle
-description: "scripts/gen_docs.py transforms knowledge/ plus a small hand-written overlay into the MkDocs source tree, so the site cannot drift from the bundle."
-tags: [docs, mkdocs, generation, pipeline, tooling]
-code_refs:
-  - scripts/gen_docs.py
-  - hooks/nav.py
+title: The Docs Site Is Hand-Written and Separate From This Bundle
+description: "The MkDocs site is plain Markdown under docs/ with an explicit nav in mkdocs.yml; it has no connection to knowledge/, and the earlier generator (scripts/gen_docs.py, hooks/nav.py) was removed."
+tags: [docs, mkdocs, site, tooling]
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-18T23:22:00Z" }
+code_refs: [mkdocs.yml, "docs/**"]
 sources:
-  - resource: llmoxie-analysis scripts/gen_docs.py
-  - resource: llmoxie-analysis hooks/nav.py
-  - resource: https://github.com/uw-ssec/llmoxie-analysis/discussions/26
-generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T18:08:34Z" }
+  - resource: llmoxie-analysis mkdocs.yml
+  - resource: llmoxie-analysis commit 408fe21 (the removed generator)
+  - resource: "https://github.com/uw-ssec/llmoxie-analysis/discussions/26"
 ---
 
-This bundle is the only hand-edited copy of the project's knowledge. The
-documentation site is generated from it, so the two cannot disagree.
+The documentation site is an ordinary hand-written MkDocs Material site. Pages
+are plain Markdown under `docs/`, the navigation is an explicit `nav:` list in
+`mkdocs.yml`, and `pixi run docs-build` runs `mkdocs build --strict` with no
+generation step in front of it. `edit_uri` points at `docs/`.
+
+The site and this bundle are not connected. Nothing in `knowledge/` is rendered
+into the site, and nothing under `docs/` is read by okf. The site is for human
+readers of the project; the bundle is project memory for agents, reached through
+`okf search`.
+
+## Guarantees
+
+- `mkdocs.yml` sets `validation.nav.omitted_files: warn` and the build runs
+  `--strict`, so a page that exists under `docs/` but is missing from `nav:`
+  fails the build, as does a broken link.
+- `site/` is build output and is gitignored.
+
+## Superseded
+
+The site was briefly generated from this bundle (PR #29, 2026-09-18):
 
 ```
 knowledge/  +  docs/_overlay/   --[ scripts/gen_docs.py ]-->  site_docs/  --[ mkdocs ]-->  site/
 ```
 
-`site_docs/` and `site/` are gitignored and rebuilt by `pixi run docs-build`,
-which runs the generator first through a `depends-on`. Nobody edits them.
+`scripts/gen_docs.py` dropped frontmatter, re-emitted `title` as an `H1`,
+resolved `[[folder/concept]]` wikilinks to relative links, promoted `sources:`
+into a visible section, and spliced `_intro.md` fragments from `docs/_overlay/`
+into folder listings. `hooks/nav.py` derived the navigation from the generated
+tree. The motivation was that a hand-synchronised parallel copy of the bundle
+went five concepts and one relationship stale within a day.
 
-## What the generator undoes
-
-Each transformation removes one thing that is meaningful to okf and meaningless
-to a renderer: frontmatter is dropped, since the page title comes from the body
-`H1`; `[[folder/concept]]` wikilinks become relative Markdown links so MkDocs
-resolves and validates them; `sources:` is promoted out of invisible frontmatter
-into a `## Sources` section; `log.md` is skipped as bookkeeping; and each folder
-listing gains its intro paragraph from the overlay.
-
-## Why generate rather than maintain two copies
-
-The two were briefly kept in parallel by hand. Within a single day the site was
-missing five concepts and one relationship — a fifth of the bundle — with no
-signal that anything was wrong. Hand-synchronisation of two directories with the
-same content does not survive contact with ordinary work.
-
-Generation also means humans edit OKF-format files through `okf create` and
-`okf update` rather than editing rendered pages. That friction is the deliberate
-cost. `edit_uri` points at `knowledge/`, so the site's "Edit this page" link
-lands on the real source.
-
-## Guarantees
-
-- Nothing in the overlay is dropped. Files of any type, at any depth, are copied
-  verbatim, and an overlay file overrides a generated page at the same path.
-- Nothing is silently excluded from the site. `mkdocs.yml` sets
-  `validation.nav.omitted_files: warn` and the build runs `--strict`, so a page
-  that never reaches the navigation fails the build.
-- The navigation is derived from the generated tree by `hooks/nav.py`, so adding
-  a concept to the bundle puts it in the site with no second list to update.
-
-## The `_` prefix
-
-Files starting with `_` are fragments, not pages. `<section>/_intro.md` is
-spliced under a section heading; `_README.md` documents the overlay. They are
-never published.
+The project owner removed the generator, the nav hook, the overlay, and their
+tests the same day, in favour of a regular starter docs site with no connection
+to `knowledge/`. The drift problem does not return, because the site no longer
+carries a copy of the bundle's content at all.
 
 ## Related Concepts
 
 - [Where Project Knowledge Lives](knowledge-bundle.md): Why the bundle sits at
   the repository root and stays separate from the site.
-- [OKF Bundle Conventions](okf-conventions.md): The format the generator reads.

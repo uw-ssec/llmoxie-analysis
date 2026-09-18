@@ -40,12 +40,13 @@ This project is organized using Pixi features for modular dependency management:
 
 - **`pre-commit`**: Code quality and consistency checks
 - **`gh-cli`**: GitHub CLI for repository interactions
+- **`docs`**: MkDocs Material for building and previewing the documentation site
 - **`onboard`**: Tools for project onboarding and setup
 
 ## Available Environments
 
-- **`default`**: Standard development environment with pre-commit hooks and
-  GitHub CLI
+- **`default`**: Standard development environment with pre-commit hooks, GitHub
+  CLI, and documentation tooling
 - **`onboard`**: Extended environment including onboarding tools
 
 ## Development
@@ -84,6 +85,20 @@ Directly add packages (this will edit the pixi toml and install):
 ```bash
 pixi add your-package
 ```
+
+## Documentation
+
+The documentation site is plain Markdown under [`docs/`](docs/), built with
+[MkDocs Material](https://squidfunk.github.io/mkdocs-material/) and configured
+in [`mkdocs.yml`](mkdocs.yml).
+
+```bash
+pixi run docs-serve    # live reload at http://127.0.0.1:8000
+pixi run docs-build    # build into site/, failing on any warning
+```
+
+To add a page, create a Markdown file under `docs/` and list it in the `nav:`
+section of `mkdocs.yml`.
 
 ## Contributing
 

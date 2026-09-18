@@ -3,7 +3,7 @@ type: Decision
 title: Where Project Knowledge Lives
 description: "Project memory is the OKF bundle at knowledge/ in the repository root, kept separate from any documentation site, because code_refs resolve against the bundle's parent directory."
 tags: [okf, knowledge-base, decision, code-refs, layout]
-generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T18:14:17Z" }
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-18T23:22:00Z" }
 sources:
   - resource: "https://github.com/uw-ssec/okf-agent-memory"
   - resource: "Project owner direction, 2026-09-17 — keep the OKF bundle and the docs site separate for now"
@@ -74,4 +74,6 @@ already in that position.
   bundle captures.
 - [Epic #1 and the Implementation Issues](epic-and-issues.md): Each closing
   issue is an occasion to update the concept that documents it.
-- [The Docs Site Is Generated From This Bundle](docs-pipeline.md): How the separated docs site is kept in step with this bundle without a second hand-maintained copy
+- [The Docs Site Is Hand-Written and Separate From This Bundle](docs-pipeline.md):
+  What the separated docs site is: hand-written Markdown under `docs/`, with no
+  copy of this bundle's content.

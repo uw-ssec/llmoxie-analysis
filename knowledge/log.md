@@ -1,4 +1,7 @@
 ## 2026-09-18
+* **Update**: Linked `project/knowledge-bundle.md` to `project/docs-pipeline.md` (What the separated docs site is: hand-written Markdown under docs/, with no copy of this bundle's content.).
+* **Update**: Linked `project/docs-pipeline.md` to `project/knowledge-bundle.md` (Why the bundle sits at the repository root and stays separate from the site.).
+* **Update**: Updated concept `project/docs-pipeline.md`.
 * **Update**: Updated concept `project/okf-conventions.md`.
 * **Update**: Updated concept `project/okf-conventions.md`.
 * **Update**: Updated concept `project/okf-conventions.md`.
