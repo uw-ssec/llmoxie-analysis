@@ -29,9 +29,10 @@ pixi run pre-commit-all
 To check a specific file, pass it through the task:
 `pixi run pre-commit --files <path>`.
 
-**The full gate is `pixi run verify`:** it runs `pre-commit-all`, then mypy
-(`typecheck`), pytest (`test`), and a wheel/sdist build (`build`), stopping at
-the first failure. Pre-commit alone covers formatting and hygiene only.
+**The full gate is `pixi run verify`:** it runs `pre-commit-all`, then the
+knowledge-bundle check (`okf-validate`), mypy (`typecheck`), pytest (`test`),
+and a wheel/sdist build (`build`), stopping at the first failure. Pre-commit
+alone covers formatting and hygiene only.
 
 **Pre-commit Hooks Configured:**
 

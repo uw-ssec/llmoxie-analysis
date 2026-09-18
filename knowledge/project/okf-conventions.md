@@ -3,7 +3,7 @@ type: Reference
 title: OKF Bundle Conventions
 description: "The folder layout, frontmatter contract, producer-gate traps, and validation gates this knowledge bundle is maintained under."
 tags: [okf, conventions, frontmatter, validation, documentation]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-18T22:20:15Z" }
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-18T22:57:56Z" }
 code_refs: [.claude/skills/okf-memory/SKILL.md, .agents/skills/okf-memory/SKILL.md]
 sources:
   - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/1"
@@ -122,6 +122,15 @@ a concept nothing links to fails rather than quietly accumulating. `--drift`
 catches index-vs-frontmatter divergence: a concept's `description` must match
 its folder `index.md` bullet verbatim, which is the mechanism that stops index
 pages from slowly becoming fiction.
+
+`pixi run verify` runs this command as its `okf-validate` step, but the exit
+code is weaker than the bar above. okf exits non-zero only for errors and
+producer-gate findings — a broken link, a `..` in `code_refs`, a source with no
+`resource`. Warnings print and exit 0, including description drift and a
+`code_refs` path that no longer exists, so a green `verify` does not prove
+`0 warning(s)`; read the summary line. Warnings are left non-fatal on purpose:
+most `code_refs` point into the `reference/` submodules, and a checkout without
+them would otherwise fail the gate.
 
 Run the bundle's binary, not whatever is on `PATH`. Multiple okf versions
 coexist easily on one machine and they do not agree.

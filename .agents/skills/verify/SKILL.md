@@ -19,6 +19,7 @@ It runs, in order, and stops at the first failure:
 | Step             | What it checks                                                   |
 | ---------------- | ---------------------------------------------------------------- |
 | `pre-commit-all` | ruff format and lint, whitespace, YAML/JSON, prettier, codespell |
+| `okf-validate`   | okf check of `knowledge/`; warnings print but do not fail        |
 | `typecheck`      | mypy, strict, over `src/` and `tests/`                           |
 | `test`           | pytest over `tests/`                                             |
 | `build`          | wheel and sdist build into `dist/` (packaging metadata is valid) |
@@ -32,6 +33,7 @@ without modifying files.
 | -------------------------------------------- | ----------------------------------------------------------------- |
 | Hook says "files were modified by this hook" | The hook fixed formatting. `git add` the files and rerun.         |
 | ruff error                                   | Fix the code. A `# noqa: <code>` needs a reason in the same line. |
+| okf `gate` or `error` line                   | Fix the concept it names, through the `okf-memory` skill.         |
 | mypy error                                   | Fix the type. `# type: ignore[<code>]` only with a reason.        |
 | pytest failure                               | Use the `run-tests` skill to isolate and fix.                     |
 | build error                                  | Check `pyproject.toml` and the version in `__init__.py`.          |

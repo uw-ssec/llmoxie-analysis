@@ -16,7 +16,7 @@ These apply to every task, in every session:
    directly. Run `pixi install` before any other Pixi command.
 2. **Verify before you claim.** Never report work as complete, fixed, or passing
    without having run the check and read its output. The minimum gate here is
-   `pixi run verify` (format, lint, type-check, tests, build).
+   `pixi run verify` (format, lint, knowledge bundle, type-check, tests, build).
 3. **Change surgically.** Every changed line must trace directly to the request.
    Don't refactor, reformat, or "improve" adjacent code you weren't asked to
    touch.
