@@ -21,7 +21,7 @@ Optional: a topic, a section, or "all" to regenerate broadly.
    - `git log --oneline -20` (recent commits)
    - `git diff main...HEAD --stat` (if on a feature branch)
    - `git log --oneline --since="8 hours ago"` (today's work)
-   - Review any open plans in `docs/plans/`
+   - Review any open plans in `docs/rse/specs/`
    - Read `docs/index.md` and `mkdocs.yml` for existing structure
 
 2. **Determine scope** — Based on the argument and recent changes, decide which
@@ -65,7 +65,7 @@ Optional: a topic, a section, or "all" to regenerate broadly.
    - Database changes → `docs/database/`
    - Frontend changes → `docs/frontend/`
    - How-to content → `docs/guides/`
-   - Implementation plans → `docs/plans/` (named `YYYY-MM-DD-topic.md`)
+   - Implementation plans → `docs/rse/specs/` (named `plan-<slug>.md`)
    - Session learnings → `docs/guides/architecture-decisions.md` (append new
      entries at top of relevant section)
    - Script documentation → `docs/scripts/`

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from llmoxie_analysis import __version__
 
 

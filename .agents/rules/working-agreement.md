@@ -83,7 +83,7 @@ read its output. "Should work" is not a result. When reporting:
 - If a step was skipped, say which one and why.
 - If something is done and verified, state it plainly without hedging.
 
-For this repository the minimum verification is `pixi run pre-commit-all` — see
+For this repository the minimum verification is `pixi run verify` — see
 [pre-commit-and-quality.md](pre-commit-and-quality.md).
 
 ---
