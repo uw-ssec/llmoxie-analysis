@@ -1,7 +1,23 @@
 ## 2026-09-18
+* **Update**: Updated concept `project/okf-conventions.md`.
+* **Update**: Updated concept `project/llmoxie-analysis.md`.
+* **Update**: Updated concept `project/knowledge-bundle.md`.
+* **Update**: Updated concept `project/okf-conventions.md`.
+* **Update**: Updated concept `project/llmoxie-analysis.md`.
+* **Update**: Updated concept `project/knowledge-bundle.md`.
+* **Update**: Linked `project/knowledge-bundle.md` to `project/docs-pipeline.md` (How the separated docs site is kept in step with this bundle without a second hand-maintained copy).
+* **Creation**: Documented concept `project/docs-pipeline.md` (The Docs Site Is Generated From This Bundle).
+* **Update**: Linked `project/llmoxie-analysis.md` to `project/cross-viss-demo.md` (Why this repository's scaffolding is further along than its analysis code, and which audience each part serves).
+* **Creation**: Documented concept `project/cross-viss-demo.md` (Cross-VISS Demo and the Repository's Two Purposes).
+* **Creation**: Documented concept `project/current-state.md` (What Exists and What Is Only Designed).
+* **Creation**: Documented concept `project/skill-evals.md` (Skill Evaluation with Inspect and Harbor).
+* **Creation**: Documented concept `project/knowledge-bundle.md` (Where Project Knowledge Lives).
+* **Creation**: Documented concept `project/okf-conventions.md` (OKF Bundle Conventions).
 * **Creation**: Documented concept `upstream/session-reconstruction.md` (group_sessions.py — Reconstructing Conversations).
 * **Creation**: Documented concept `upstream/reader-flattening.md` (reader.py — Flattening Requests to Message Blocks).
 * **Creation**: Documented concept `upstream/model-name-normalization.md` (Model Name Normalization).
+* **Creation**: Documented concept `project/llmoxie-analysis.md` (LLMoxie Analysis).
+* **Creation**: Documented concept `project/epic-and-issues.md` (Epic #1 and the Implementation Issues).
 * **Creation**: Documented concept `platform/logging-paths.md` (The Two Logging Paths).
 * **Creation**: Documented concept `platform/llmoxie-timeline.md` (LLMoxie Development Timeline).
 * **Creation**: Documented concept `platform/llmoxie-platform.md` (LLMoxie Platform).

@@ -1,0 +1,9 @@
+# Project
+* [Epic #1 and the Implementation Issues](epic-and-issues.md) - How epic issue #1 decomposes into twelve sub-issues, which concept each one implements, and the dependency order that determines what can be worked on in parallel.
+* [LLMoxie Analysis](llmoxie-analysis.md) - The analysis package that turns raw LLMoxie gateway request logs into a queryable Parquet warehouse of sessions, messages, and tool calls.
+* [OKF Bundle Conventions](okf-conventions.md) - The folder layout, frontmatter contract, producer-gate traps, and validation gates this knowledge bundle is maintained under.
+* [Where Project Knowledge Lives](knowledge-bundle.md) - Project memory is the OKF bundle at knowledge/ in the repository root, kept separate from any documentation site, because code_refs resolve against the bundle's parent directory.
+* [Skill Evaluation with Inspect and Harbor](skill-evals.md) - Skills are evaluated at two levels — Inspect for model-level correctness and Harbor for whether an agent actually uses the skill — from one Pixi environment whose dependencies must come from PyPI.
+* [What Exists and What Is Only Designed](current-state.md) - The analysis package is still empty scaffolding: pipeline/ records decisions for code that has not been written, and the working prototypes live in the reference/ submodules.
+* [Cross-VISS Demo and the Repository's Two Purposes](cross-viss-demo.md) - The repository serves internal trace analysis for the long term and a Cross-VISS Convening demo in the near term, and the demo runs on a fork so its scaffolding must not shape this repository.
+* [The Docs Site Is Generated From This Bundle](docs-pipeline.md) - scripts/gen_docs.py transforms knowledge/ plus a small hand-written overlay into the MkDocs source tree, so the site cannot drift from the bundle.
