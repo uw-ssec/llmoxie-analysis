@@ -3,6 +3,9 @@ type: Fact
 title: group_sessions.py — Reconstructing Conversations
 description: "The upstream prototype that groups flat request rows into per-session conversations, and the specific behaviors this project must preserve or repair."
 tags: [sessions, grouping, prototype, upstream, pr-151]
+code_refs:
+  - reference/llmoxie/src/llmaven/data/group_sessions.py
+  - reference/llmoxie/src/llmaven/data/README.md
 sources:
   - resource: reference/llmoxie/src/llmaven/data/group_sessions.py (404 lines)
   - resource: reference/llmoxie commit ec5d8b2, PR #151, 2026-09-11

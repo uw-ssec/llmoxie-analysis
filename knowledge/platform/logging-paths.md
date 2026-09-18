@@ -3,6 +3,8 @@ type: Fact
 title: The Two Logging Paths
 description: "LLMoxie records every request twice over — to Azure Data Lake as untruncated JSON and to LiteLLM's PostgreSQL spend logs — and the two differ in fidelity, coverage, and era."
 tags: [logging, adls, litellm, data-source, fidelity]
+code_refs:
+  - reference/llmoxie/src/llmaven/infrastructure/resources/adl_logger.py
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
   - resource: reference/llmoxie/src/llmaven/infrastructure/resources/adl_logger.py
