@@ -30,3 +30,4 @@ with `okf search "<keywords>"` rather than browsing these files.
   this project must fix or absorb.
 * [Caveats](caveats/index.md) - Properties of the data that will mislead anyone
   who does not know them.
+* [Pipeline](pipeline/index.md) - The design of the thing being built.
