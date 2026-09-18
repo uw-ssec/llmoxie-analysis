@@ -16,6 +16,10 @@ onboard = { features = ["pre-commit", "gh-cli", "onboard"], solve-group = "defau
 python = ">=3.11"
 pytest = ">=9.1.1,<10"
 okf-agent-memory = ">=0.3.1,<0.4"
+ruff = ">=0.16.7,<0.17"
+mypy = ">=2.3.1,<3"
+python-build = ">=1.6.0,<2"
+hatchling = ">=1.32.3,<2"
 
 # The project dependencies from PyPI
 [pypi-dependencies]
@@ -24,6 +28,18 @@ llmoxie-analysis = { path = ".", editable = true }
 # The main project tasks
 [tasks]
 test = { cmd = "pytest", description = "Run the test suite with pytest" }
+lint = { cmd = "ruff check . && ruff format --check .", description = "Lint and check formatting with ruff (no changes made)" }
+typecheck = { cmd = "mypy", description = "Type-check src/ and tests/ with mypy (strict)" }
+build = { cmd = "python -m build --wheel --sdist --no-isolation --outdir dist", description = "Build the wheel and sdist into dist/" }
+verify = { depends-on = [
+    "pre-commit-all",
+    "typecheck",
+    "test",
+    "build",
+], description = "The quality gate: format+lint, type-check, tests, build. Must exit 0 before commit or PR" }
+setup = { cmd = "git submodule update --init --recursive", depends-on = [
+    "pre-commit-install",
+], description = "One-time setup after pixi install: git hooks and the read-only reference/ submodules" }
 
 # GitHub CLI feature for interacting with GitHub from the command line
 [feature.gh-cli.dependencies]

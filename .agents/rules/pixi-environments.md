@@ -30,6 +30,8 @@ pixi install
 # This installs:
 # - pre-commit (>=4.3.0)
 # - gh (GitHub CLI, >=2.0.0)
+# - python, pytest, ruff, mypy, python-build, hatchling
+# - llmoxie-analysis as an editable package
 # - Creates .pixi/envs/default directory
 ```
 
@@ -85,6 +87,11 @@ Run `pixi task list` to see all available tasks:
 - `pre-commit`: Run checks on staged files
 - `pre-commit-all`: Run checks on all files
 - `test`: Run the `llmoxie_analysis` test suite with pytest
+- `lint`: ruff lint and format check, no files modified
+- `typecheck`: mypy over `src/` and `tests/` (strict)
+- `build`: build wheel and sdist into `dist/`
+- `verify`: the quality gate — `pre-commit-all`, `typecheck`, `test`, `build`
+- `setup`: install git hooks and pull the `reference/` submodules
 - `ssec-setup`: Set up ssec CLI completion (onboard env only)
 - `onboard`: Full onboarding process (onboard env only)
 

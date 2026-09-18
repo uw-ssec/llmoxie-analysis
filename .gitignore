@@ -9,9 +9,11 @@ __pycache__/
 build/
 dist/
 
-# Testing
+# Testing and tooling caches
 .pytest_cache/
 .coverage
+.mypy_cache/
+.ruff_cache/
 
 # MacOS
 .DS_Store
