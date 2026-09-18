@@ -88,7 +88,9 @@ pixi add your-package
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of
-conduct and the process for submitting pull requests.
+conduct and the process for submitting pull requests. If you use AI tools while
+contributing, read the [AI Policy](AI_POLICY.md) first: it covers disclosure,
+review responsibility, and how to credit AI assistance in commits.
 
 ## License
 
