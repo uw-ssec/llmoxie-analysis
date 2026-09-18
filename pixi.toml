@@ -8,8 +8,8 @@ version = "0.1.0" # Project version
 
 # The environment configurations for different development scenarios
 [environments]
-default = { features = ["pre-commit", "gh-cli"], solve-group = "default" } # The default development environment with pre-commit and GitHub CLI
-onboard = { features = ["pre-commit", "gh-cli", "onboard"], solve-group = "default" } # The onboarding environment with additional setup tasks
+default = { features = ["pre-commit", "gh-cli", "docs"], solve-group = "default" } # The default development environment with pre-commit, GitHub CLI, and documentation tooling
+onboard = { features = ["pre-commit", "gh-cli", "docs", "onboard"], solve-group = "default" } # The onboarding environment with additional setup tasks
 
 # The project dependencies
 [dependencies]
@@ -53,6 +53,11 @@ pre-commit = ">=4.3.0"
 pre-commit-install = { cmd = "pre-commit install", description = "Install pre-commit hooks in the git repository" }
 pre-commit-all = { cmd = "pre-commit run --all-files", description = "Run pre-commit checks on all files" }
 pre-commit = { cmd = "pre-commit run", description = "Run pre-commit checks on staged files" }
+
+# Documentation feature for building and previewing the MkDocs site
+[feature.docs.dependencies]
+mkdocs = ">=1.6.0"
+mkdocs-material = ">=9.5.0"
 
 # Onboarding feature for setting up the development environment
 [feature.onboard.pypi-dependencies]

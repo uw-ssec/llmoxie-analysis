@@ -15,5 +15,8 @@ dist/
 .mypy_cache/
 .ruff_cache/
 
+# MkDocs build output
+site/
+
 # MacOS
 .DS_Store
