@@ -18,6 +18,7 @@ pytest = ">=9.1.1,<10"
 okf-agent-memory = ">=0.4.0,<0.5"
 ruff = ">=0.16.7,<0.17"
 mypy = ">=2.3.1,<3"
+types-pyyaml = ">=6.0" # stubs for the docs generator, which parses frontmatter
 python-build = ">=1.6.0,<2"
 hatchling = ">=1.32.3,<2"
 
@@ -29,7 +30,7 @@ llmoxie-analysis = { path = ".", editable = true }
 [tasks]
 test = { cmd = "pytest", description = "Run the test suite with pytest" }
 lint = { cmd = "ruff check . && ruff format --check .", description = "Lint and check formatting with ruff (no changes made)" }
-typecheck = { cmd = "mypy", description = "Type-check src/ and tests/ with mypy (strict)" }
+typecheck = { cmd = "mypy", description = "Type-check src/, tests/ and scripts/ with mypy (strict)" }
 build = { cmd = "python -m build --wheel --sdist --no-isolation --outdir dist", description = "Build the wheel and sdist into dist/" }
 verify = { depends-on = [
     "pre-commit-all",
@@ -58,6 +59,11 @@ pre-commit = { cmd = "pre-commit run", description = "Run pre-commit checks on s
 [feature.docs.dependencies]
 mkdocs = ">=1.6.0"
 mkdocs-material = ">=9.5.0"
+
+[feature.docs.tasks]
+docs-gen = { cmd = "python scripts/gen_docs.py", description = "Generate site_docs/ from the knowledge/ bundle and docs/_overlay/" }
+docs-build = { cmd = "mkdocs build --strict", depends-on = ["docs-gen"], description = "Generate and build the documentation site, failing on warnings" }
+docs-serve = { cmd = "mkdocs serve", depends-on = ["docs-gen"], description = "Generate and serve the documentation site locally" }
 
 # Onboarding feature for setting up the development environment
 [feature.onboard.pypi-dependencies]
