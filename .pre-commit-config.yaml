@@ -34,6 +34,7 @@ repos:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
         args: [--prose-wrap=always]
+        exclude: ^knowledge/ # okf owns this format; prettier folds frontmatter
 
   - repo: https://github.com/codespell-project/codespell
     rev: "v2.3.0"
