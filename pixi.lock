@@ -93,7 +93,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/virtualenv-21.7.9-pyh5ded981_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
-      - conda: https://prefix.dev/lsetiawan/uw-ssec/linux-64/okf-agent-memory-0.3.1-hb0f4dca_0.conda
+      - conda: https://prefix.dev/lsetiawan/uw-ssec/linux-64/okf-agent-memory-0.4.0-hb0f4dca_0.conda
       - pypi: ./
       linux-aarch64:
       - conda: https://prefix.dev/conda-forge/linux-aarch64/_openmp_mutex-4.5-20_gnu.conda
@@ -163,7 +163,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/virtualenv-21.7.9-pyh5ded981_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
-      - conda: https://prefix.dev/lsetiawan/uw-ssec/linux-aarch64/okf-agent-memory-0.3.1-he8cfe8b_0.conda
+      - conda: https://prefix.dev/lsetiawan/uw-ssec/linux-aarch64/okf-agent-memory-0.4.0-he8cfe8b_0.conda
       - pypi: ./
       osx-arm64:
       - conda: https://prefix.dev/conda-forge/noarch/_python_abi3_support-1.0-hd8ed1ab_3.conda
@@ -228,7 +228,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/osx-arm64/ukkonen-1.1.0-py314h6cfcd04_0.conda
       - conda: https://prefix.dev/conda-forge/osx-arm64/yaml-0.2.5-h74c22ad_3.conda
       - conda: https://prefix.dev/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
-      - conda: https://prefix.dev/lsetiawan/uw-ssec/osx-arm64/okf-agent-memory-0.3.1-h60d57d3_0.conda
+      - conda: https://prefix.dev/lsetiawan/uw-ssec/osx-arm64/okf-agent-memory-0.4.0-h60d57d3_0.conda
       - pypi: ./
   onboard:
     channels:
@@ -305,7 +305,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/virtualenv-21.7.9-pyh5ded981_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
-      - conda: https://prefix.dev/lsetiawan/uw-ssec/linux-64/okf-agent-memory-0.3.1-hb0f4dca_0.conda
+      - conda: https://prefix.dev/lsetiawan/uw-ssec/linux-64/okf-agent-memory-0.4.0-hb0f4dca_0.conda
       - pypi: ./
       - pypi: git+https://github.com/uw-ssec/ssec-cli.git#3f46238be3defeeaf864c8781950a665d711492e
       - pypi: https://files.pythonhosted.org/packages/3e/30/e900b21425a860e195f32e37657aa1f7c7f2b1bfb26f03ca209b90933c06/annotated_doc-0.0.5-py3-none-any.whl
@@ -382,7 +382,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/virtualenv-21.7.9-pyh5ded981_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
-      - conda: https://prefix.dev/lsetiawan/uw-ssec/linux-aarch64/okf-agent-memory-0.3.1-he8cfe8b_0.conda
+      - conda: https://prefix.dev/lsetiawan/uw-ssec/linux-aarch64/okf-agent-memory-0.4.0-he8cfe8b_0.conda
       - pypi: ./
       - pypi: git+https://github.com/uw-ssec/ssec-cli.git#3f46238be3defeeaf864c8781950a665d711492e
       - pypi: https://files.pythonhosted.org/packages/3e/30/e900b21425a860e195f32e37657aa1f7c7f2b1bfb26f03ca209b90933c06/annotated_doc-0.0.5-py3-none-any.whl
@@ -454,7 +454,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/osx-arm64/ukkonen-1.1.0-py314h6cfcd04_0.conda
       - conda: https://prefix.dev/conda-forge/osx-arm64/yaml-0.2.5-h74c22ad_3.conda
       - conda: https://prefix.dev/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
-      - conda: https://prefix.dev/lsetiawan/uw-ssec/osx-arm64/okf-agent-memory-0.3.1-h60d57d3_0.conda
+      - conda: https://prefix.dev/lsetiawan/uw-ssec/osx-arm64/okf-agent-memory-0.4.0-h60d57d3_0.conda
       - pypi: ./
       - pypi: git+https://github.com/uw-ssec/ssec-cli.git#3f46238be3defeeaf864c8781950a665d711492e
       - pypi: https://files.pythonhosted.org/packages/3e/30/e900b21425a860e195f32e37657aa1f7c7f2b1bfb26f03ca209b90933c06/annotated_doc-0.0.5-py3-none-any.whl
@@ -2254,27 +2254,27 @@ packages:
     - zstd >=1.5.7,<1.6.0a0
   size: 433687
   timestamp: 1786599629846
-- conda: https://prefix.dev/lsetiawan/uw-ssec/linux-64/okf-agent-memory-0.3.1-hb0f4dca_0.conda
-  sha256: f052bd09c0050010b623229ad0f6479989574e31f35b105c6dc95087030eb904
-  md5: 50e765f4baa53e3e20cc0667b48d8c03
+- conda: https://prefix.dev/lsetiawan/uw-ssec/linux-64/okf-agent-memory-0.4.0-hb0f4dca_0.conda
+  sha256: a06e089ce892c5de605e7acd9d1e818fe56564f02f7e724df0f6331753a00cd1
+  md5: 623a62d3c2d4fe603b1a9be76a32db7a
   license: MIT
   run_exports: {}
-  size: 1425681
-  timestamp: 1789685840305
-- conda: https://prefix.dev/lsetiawan/uw-ssec/linux-aarch64/okf-agent-memory-0.3.1-he8cfe8b_0.conda
-  sha256: c2c504eadf415211a7f0593fa0fd3fa7197897b714adf916777906e1f1836c09
-  md5: b105294618832165ccb0ad12dae7173a
+  size: 3244692
+  timestamp: 1789707182082
+- conda: https://prefix.dev/lsetiawan/uw-ssec/linux-aarch64/okf-agent-memory-0.4.0-he8cfe8b_0.conda
+  sha256: c04cab7309898895c335afc04b447d679ae0970fdf1c27540fea93ce9d9e4684
+  md5: 10d1ebb68886fec54ffebba9e047df1b
   license: MIT
   run_exports: {}
-  size: 1279316
-  timestamp: 1789685832289
-- conda: https://prefix.dev/lsetiawan/uw-ssec/osx-arm64/okf-agent-memory-0.3.1-h60d57d3_0.conda
-  sha256: 27d90c16c94facd0be2429833acf6a2e749c25848c6ad129c585bece6eaebbb1
-  md5: 0ad4610e84ec5065809ce0c7523d8812
+  size: 2919927
+  timestamp: 1789707160190
+- conda: https://prefix.dev/lsetiawan/uw-ssec/osx-arm64/okf-agent-memory-0.4.0-h60d57d3_0.conda
+  sha256: 5a4f82efbdd0f84b042f0a9b07796caabb8f2df25a8eb85c9840ebe35cbd7b9a
+  md5: 1b3a17517e3fac2534d66fddb1078fef
   license: MIT
   run_exports: {}
-  size: 1279959
-  timestamp: 1789685321162
+  size: 2906230
+  timestamp: 1789707134895
 - pypi: ./
   name: llmoxie-analysis
   requires_python: '>=3.11'
