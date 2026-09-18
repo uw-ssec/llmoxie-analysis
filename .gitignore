@@ -15,8 +15,9 @@ dist/
 .mypy_cache/
 .ruff_cache/
 
-# MkDocs build output
+# MkDocs build output and the generated docs source tree
 site/
+site_docs/
 
 # MacOS
 .DS_Store

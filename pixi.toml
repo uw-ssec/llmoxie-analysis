@@ -59,6 +59,11 @@ pre-commit = { cmd = "pre-commit run", description = "Run pre-commit checks on s
 mkdocs = ">=1.6.0"
 mkdocs-material = ">=9.5.0"
 
+[feature.docs.tasks]
+docs-gen = { cmd = "python scripts/gen_docs.py", description = "Generate site_docs/ from the knowledge/ bundle and docs/_overlay/" }
+docs-build = { cmd = "mkdocs build --strict", depends-on = ["docs-gen"], description = "Generate and build the documentation site, failing on warnings" }
+docs-serve = { cmd = "mkdocs serve", depends-on = ["docs-gen"], description = "Generate and serve the documentation site locally" }
+
 # Onboarding feature for setting up the development environment
 [feature.onboard.pypi-dependencies]
 ssec-cli = { git = "https://github.com/uw-ssec/ssec-cli.git" }
