@@ -4,7 +4,7 @@ title: LLMoxie Platform
 description: "The UW SSEC open-source AI control plane whose LiteLLM gateway produces the request logs analyzed here, built in three layers under NSF NAIRR award 240292."
 tags: [llmoxie, platform, litellm, nairr, ssec]
 sources:
-  - resource: https://github.com/uw-ssec/llmoxie
+  - resource: reference/llmoxie
   - resource: https://github.com/uw-ssec/rse-plugins
   - resource: https://nairrpilot.org/projects/awarded?_requestNumber=NAIRR240292
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }

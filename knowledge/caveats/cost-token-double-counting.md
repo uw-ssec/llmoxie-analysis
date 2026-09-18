@@ -4,9 +4,11 @@ title: "Caveat: Cost and Token Double-Counting"
 description: "Agentic clients resend the whole conversation on every turn, so summing per-request spend across a session counts the same content many times over."
 tags: [caveat, cost, tokens, double-counting, metrics]
 governance: constraint
+code_refs:
+  - reference/llmoxie/src/llmaven/data/group_sessions.py
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-  - resource: uw-ssec/llmoxie data/group_sessions.py, build_sessions()
+  - resource: reference/llmoxie/src/llmaven/data/group_sessions.py, build_sessions()
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

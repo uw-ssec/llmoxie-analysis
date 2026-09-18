@@ -4,9 +4,11 @@ title: "Caveat: end_user Parsing Fragility"
 description: "Session identity is recovered by parsing a free-form client-supplied string, and roughly a quarter of early-2026 requests cannot be parsed at all."
 tags: [caveat, data-quality, sessions, end-user, coverage]
 governance: constraint
+code_refs:
+  - reference/llmoxie/src/llmaven/data/reader.py
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-  - resource: uw-ssec/llmoxie src/llmaven/data/reader.py, _parse_end_user()
+  - resource: reference/llmoxie/src/llmaven/data/reader.py, _parse_end_user()
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

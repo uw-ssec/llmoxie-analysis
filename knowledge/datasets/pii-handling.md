@@ -5,7 +5,7 @@ description: "The working rule for analyzing gateway logs — name the sensitive
 tags: [pii, privacy, process, safety, methodology]
 sources:
   - resource: structure-only profile of the Jan-Mar 2026 extract
-  - resource: uw-ssec/llmoxie LiteLLM Presidio PII masking config
+  - resource: reference/llmoxie/README.md, Presidio PII masking
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

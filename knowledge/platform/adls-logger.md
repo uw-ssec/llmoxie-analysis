@@ -3,9 +3,11 @@ type: Fact
 title: AdlLogger — Azure Data Lake Logging
 description: "The LiteLLM callback that writes one untruncated JSON blob per request to ADLS Gen2, its record envelope, its path convention, and its silent failure mode."
 tags: [adls, logging, azure, litellm-callback]
+code_refs:
+  - reference/llmoxie/src/llmaven/infrastructure/resources/adl_logger.py
 sources:
-  - resource: uw-ssec/llmoxie infrastructure/resources/adl_logger.py
-  - resource: uw-ssec/llmoxie commit b0f1961, PR #123, 2026-05-08
+  - resource: reference/llmoxie/src/llmaven/infrastructure/resources/adl_logger.py
+  - resource: reference/llmoxie commit b0f1961, PR #123, 2026-05-08
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

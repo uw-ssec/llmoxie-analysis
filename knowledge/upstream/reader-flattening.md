@@ -3,8 +3,10 @@ type: Fact
 title: reader.py — Flattening Requests to Message Blocks
 description: "The upstream module that explodes each gateway request into one row per content block, including the end_user parsing that session identity depends on."
 tags: [reader, flattening, pandas, upstream, dataframe]
+code_refs:
+  - reference/llmoxie/src/llmaven/data/reader.py
 sources:
-  - resource: uw-ssec/llmoxie src/llmaven/data/reader.py (435 lines)
+  - resource: reference/llmoxie/src/llmaven/data/reader.py (435 lines)
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

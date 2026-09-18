@@ -3,10 +3,12 @@ type: Fact
 title: LiteLLM Spend Logs and infra extract
 description: "The PostgreSQL-backed spend-log path, the REST endpoint that reads it, and the llmaven infra extract command that packages a date range into a zip."
 tags: [litellm, postgres, spend-logs, extract, cli]
+code_refs:
+  - reference/llmoxie/src/llmaven/data/README.md
 sources:
-  - resource: uw-ssec/llmoxie commit 527d163, PR #79, 2026-02-16
-  - resource: uw-ssec/llmoxie commit 39901b9, PR #100, 2026-03-17
-  - resource: uw-ssec/llmoxie src/llmaven/data/README.md
+  - resource: reference/llmoxie commit 527d163, PR #79, 2026-02-16
+  - resource: reference/llmoxie commit 39901b9, PR #100, 2026-03-17
+  - resource: reference/llmoxie/src/llmaven/data/README.md
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

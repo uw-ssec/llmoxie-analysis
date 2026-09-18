@@ -3,8 +3,10 @@ type: Process
 title: Model Name Normalization
 description: The ordered rewrite rules that collapse provider-prefixed model identifiers into a single canonical family-and-version label for grouping.
 tags: [models, normalization, bedrock, grouping]
+code_refs:
+  - reference/llmoxie/src/llmaven/data/reader.py
 sources:
-  - resource: uw-ssec/llmoxie data/reader.py, normalize_model_name()
+  - resource: reference/llmoxie/src/llmaven/data/reader.py, normalize_model_name()
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 

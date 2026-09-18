@@ -3,6 +3,9 @@ type: Architecture
 title: The Docs Site Is Generated From This Bundle
 description: "scripts/gen_docs.py transforms knowledge/ plus a small hand-written overlay into the MkDocs source tree, so the site cannot drift from the bundle."
 tags: [docs, mkdocs, generation, pipeline, tooling]
+code_refs:
+  - scripts/gen_docs.py
+  - hooks/nav.py
 sources:
   - resource: llmoxie-analysis scripts/gen_docs.py
   - resource: llmoxie-analysis hooks/nav.py

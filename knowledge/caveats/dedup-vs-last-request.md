@@ -4,10 +4,13 @@ title: "Caveat: last_request_per_session vs deduplicate_messages"
 description: "Two reduction functions that look interchangeable are not, and applying them in the wrong order silently destroys most of a conversation."
 tags: [caveat, deduplication, ordering, correctness]
 governance: constraint
+code_refs:
+  - reference/llmoxie/src/llmaven/data/reader.py
+  - reference/llmoxie/src/llmaven/data/group_sessions.py
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-  - resource: uw-ssec/llmoxie src/llmaven/data/reader.py
-  - resource: uw-ssec/llmoxie src/llmaven/data/group_sessions.py
+  - resource: reference/llmoxie/src/llmaven/data/reader.py
+  - resource: reference/llmoxie/src/llmaven/data/group_sessions.py
 generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 
