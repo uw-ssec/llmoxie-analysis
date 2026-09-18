@@ -21,5 +21,9 @@ site/
 # Obsidian vault settings, created when knowledge/ is opened as a vault
 knowledge/.obsidian/
 
+# Skill evals: run logs and the skills copy synced into harbor build contexts
+evals/logs/
+evals/harbor/tasks/*/environment/skills/
+
 # MacOS
 .DS_Store

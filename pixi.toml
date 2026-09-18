@@ -10,6 +10,7 @@ version = "0.1.0" # Project version
 [environments]
 default = { features = ["pre-commit", "gh-cli", "docs"], solve-group = "default" } # The default development environment with pre-commit, GitHub CLI, and documentation tooling
 onboard = { features = ["pre-commit", "gh-cli", "docs", "onboard"], solve-group = "default" } # The onboarding environment with additional setup tasks
+evals = { features = ["pre-commit", "gh-cli", "evals"], solve-group = "evals" } # Skill-evaluation environment with Inspect and Harbor (own solve group: needs Python 3.12+)
 
 # The project dependencies
 [dependencies]
@@ -75,3 +76,33 @@ onboard = { cmd = "ssec onboard", description = "Run the onboarding process for 
     "pre-commit-install",
     "ssec-setup",
 ] }
+
+# Evals feature: Inspect (model-level evals) + Harbor (sandboxed agent evals)
+# for evaluating skills. See evals/README.md.
+[feature.evals.dependencies]
+python = ">=3.12,<3.14" # harbor requires >=3.12
+# The conda solve otherwise pins importlib-metadata 9.x, which harbor's
+# litellm dependency rejects (it requires <9). Pin it here so the conda and
+# PyPI halves of this environment agree.
+importlib-metadata = "<9"
+
+# Both come from PyPI on purpose. Taking inspect-ai from conda-forge pins
+# websockets==17.x in the conda solve, which conflicts with harbor's
+# supabase -> realtime chain (websockets<16). A single PyPI resolve settles both.
+[feature.evals.pypi-dependencies]
+harbor = ">=0.23.0"
+inspect-ai = ">=0.3.263"
+
+[feature.evals.tasks]
+# --- Inspect ---------------------------------------------------------------
+inspect-smoke = { cmd = "inspect eval evals/inspect/greeting_file.py -T smoke=true --display plain --log-dir evals/logs/inspect", description = "Run the greeting-file skill eval against the mock model (no API key needed)" }
+inspect-view = { cmd = "inspect view --log-dir evals/logs/inspect", description = "Open the Inspect log viewer for local eval logs" }
+# --- Harbor ----------------------------------------------------------------
+# Docker build contexts can't follow symlinks out of the context directory, so
+# the canonical skills in evals/skills/ are copied into the task's environment
+# before each run. The copy is gitignored.
+harbor-sync-skills = { cmd = "rm -rf evals/harbor/tasks/greeting-file/environment/skills && mkdir -p evals/harbor/tasks/greeting-file/environment/skills && cp -R evals/skills/greeting-file evals/harbor/tasks/greeting-file/environment/skills/greeting-file", description = "Copy evals/skills into the harbor task build context" }
+harbor-oracle = { cmd = "harbor run -p evals/harbor/tasks/greeting-file -a oracle -o evals/logs/harbor -q", depends-on = ["harbor-sync-skills"], description = "Verify the greeting-file harbor task with the oracle agent (runs solution/solve.sh, needs Docker)" }
+harbor-view = { cmd = "harbor view evals/logs/harbor", description = "Open the Harbor trajectory viewer for local job logs" }
+# --- Combined --------------------------------------------------------------
+evals-smoke = { depends-on = ["inspect-smoke", "harbor-oracle"], description = "Run both smoke tests end to end" }
