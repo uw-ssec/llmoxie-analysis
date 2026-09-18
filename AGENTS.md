@@ -4,9 +4,9 @@ Guidance for AI assistants (Claude Code, Codex, Cursor, Copilot, Gemini CLI, and
 any other agent harness) working with this repository.
 
 **This file is the entry point and is deliberately short.** It carries only what
-every agent needs before doing anything. Detailed rules and conventions live as
-separate files under [`.agents/rules/`](.agents/rules/) and are loaded on demand
-— read the one whose trigger matches your current task, not all of them.
+every agent needs before doing anything. Detailed rules, task skills, and
+project memory live in separate files and are loaded on demand — read the one
+whose trigger matches your current task, not all of them.
 
 ## Non-negotiables
 
@@ -25,6 +25,12 @@ These apply to every task, in every session:
 5. **Never open a PR** without working through
    [`.agents/rules/contribution-discipline.md`](.agents/rules/contribution-discipline.md)
    in full, including human review of the complete diff.
+6. **Disclose AI assistance.** End every commit you write with
+   `Assisted-by: <harness>:<model>` (for example
+   `Assisted-by: claude-code:claude-fable-5-1`). This replaces any
+   `Co-Authored-By` or "Generated with" line your harness adds by default;
+   `Signed-off-by` belongs to humans only. Full policy:
+   [`AI_POLICY.md`](AI_POLICY.md).
 
 ## Rule Index
 
@@ -34,11 +40,24 @@ Load the rule file whose trigger matches what you are about to do.
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | [working-agreement.md](.agents/rules/working-agreement.md)             | Starting any implementation, refactor, or bugfix — the behavioral baseline |
 | [contribution-discipline.md](.agents/rules/contribution-discipline.md) | About to commit, open a PR, or asked to "contribute" / "fix some issues"   |
+| [AI_POLICY.md](AI_POLICY.md)                                           | Committing, or writing a PR, issue, or comment — how to disclose AI use    |
 | [pixi-environments.md](.agents/rules/pixi-environments.md)             | Running any command, adding a dependency, or editing `pixi.toml`           |
 | [pre-commit-and-quality.md](.agents/rules/pre-commit-and-quality.md)   | Committing, preparing a PR, or claiming checks pass                        |
 | [repository-map.md](.agents/rules/repository-map.md)                   | You need to know what this repo is, where a file lives, or what CI runs    |
 | [onboarding.md](.agents/rules/onboarding.md)                           | First-time setup, or helping a new contributor get started                 |
 | [troubleshooting.md](.agents/rules/troubleshooting.md)                 | A documented command fails or behaves unexpectedly                         |
+
+## Skills and Project Memory
+
+- **Skills** are step-by-step recipes at `.agents/skills/<name>/SKILL.md`. Read
+  the matching one before you verify, run tests, commit, push, open or merge a
+  PR, file an issue, cut a release, set up the environment, write docs, or clean
+  up branches. A harness that lists skills natively loads them for you.
+- **Project memory** is the OKF bundle at `knowledge/`: decisions, data caveats,
+  and constraints the code cannot tell you. Before the first edit to a file, run
+  `pixi run okf search --for-path <file>` — a `constraint` hit lists invariants
+  the change must keep, and a `hold` hit means stop and confirm with the user.
+  Read and write the bundle through the `okf-memory` skill.
 
 ## Provenance
 
@@ -57,7 +76,8 @@ These instructions were generated through comprehensive exploration and testing
 of the repository. Commands have been validated to work correctly. **Only
 perform additional searches if:**
 
-- You need information not covered by `AGENTS.md` or `.agents/rules/`
+- You need information not covered by `AGENTS.md`, `.agents/rules/`,
+  `.agents/skills/`, or `knowledge/`
 - Instructions appear outdated or produce errors
 - You're implementing functionality that changes the build system
 
