@@ -15,9 +15,8 @@ dist/
 .mypy_cache/
 .ruff_cache/
 
-# MkDocs build output and the generated docs source tree
+# MkDocs build output
 site/
-site_docs/
 
 # Obsidian vault settings, created when knowledge/ is opened as a vault
 knowledge/.obsidian/

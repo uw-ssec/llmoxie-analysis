@@ -75,11 +75,9 @@ pydocstyle.convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D", "T20"]
-"scripts/**" = ["T20"]  # build scripts report progress on stdout
 
 [tool.mypy]
-files = ["src", "tests", "scripts"]
-mypy_path = "scripts"
+files = ["src", "tests"]
 python_version = "3.11"
 strict = true
 warn_unreachable = true

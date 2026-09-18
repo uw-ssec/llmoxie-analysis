@@ -5,18 +5,19 @@ what CI runs against it.
 
 ## Repository Overview
 
-This is a **blank project template** repository for UW SSEC (Scientific Software
-Engineering Center) projects. It provides standardized community health files,
-pre-commit configurations, and onboarding tools. The repository itself contains
-no application code — it serves as a starting point for new projects.
+**llmoxie-analysis** is the data analysis package for the
+[LLMoxie](https://github.com/uw-ssec/llmoxie) project at UW SSEC (Scientific
+Software Engineering Center). It turns raw LLMoxie gateway request logs into a
+queryable Parquet warehouse of sessions, messages, and tool calls. The package
+is still early scaffolding; the pipeline design is recorded in `knowledge/` and
+the working prototypes live in the `reference/` submodules.
 
 **Repository Stats:**
 
-- **Type:** Template repository / Boilerplate
-- **Size:** Small (~20 files)
-- **Languages:** Configuration files (TOML, YAML, Markdown)
-- **Build System:** Pixi (v0.49.0+)
-- **Platform:** macOS (osx-arm64), easily extensible to other platforms
+- **Type:** Installable Python package (src layout, Hatchling build backend)
+- **Languages:** Python (>=3.11), plus configuration (TOML, YAML, Markdown)
+- **Build System:** Pixi (pinned to v0.81.0 in CI and the devcontainer)
+- **Platforms:** osx-arm64, linux-64, linux-aarch64
 - **License:** BSD 3-Clause
 
 ## Project Structure & Key Files
@@ -28,24 +29,41 @@ no application code — it serves as a starting point for new projects.
 │   └── skills/                  # User-invocable skills (/commit, /create-pr, ...)
 ├── .claude/
 │   └── skills -> ../.agents/skills  # Symlink so Claude Code discovers the skills
+├── .devcontainer/               # Dev container / Codespaces image (pins PIXI_VERSION)
 ├── .github/
+│   ├── copilot-instructions.md -> ../AGENTS.md
 │   ├── dependabot.yml           # Dependabot config for GitHub Actions
 │   ├── pull_request_template.md # PR template (requires pre-commit checks)
 │   ├── release.yml              # Release notes configuration
 │   ├── workflows/               # GitHub Actions (zizmor workflow linting, Copilot agent setup)
 │   └── ISSUE_TEMPLATE/          # Issue templates (bug, feature, docs, onboard, etc.)
+├── docs/                        # Documentation site source: hand-written Markdown pages
+├── knowledge/                   # Project memory (OKF bundle); read and write via the okf-memory skill
+├── reference/                   # Read-only git submodules: llmoxie, ceil-dlp (upstream prototypes)
+├── src/llmoxie_analysis/        # The package; __version__ lives in __init__.py
+├── tests/                       # pytest suite
 ├── .pre-commit-config.yaml      # Pre-commit hook configuration
+├── mkdocs.yml                   # Docs site config; every page must be listed under nav:
 ├── pixi.toml                    # **PRIMARY CONFIG**: Dependencies, tasks, features
 ├── pixi.lock                    # Lock file (auto-generated, don't manually edit)
-├── .gitignore                   # Ignores .pixi/ and .DS_Store
+├── pyproject.toml               # Package metadata, plus ruff, mypy, and pytest settings
+├── .gitignore                   # Ignores .pixi/, build artifacts, tool caches, site/
+├── .gitmodules                  # Declares the reference/ submodules
 ├── AGENTS.md                    # Entry point for AI assistants
 ├── CLAUDE.md                    # Points Claude Code at AGENTS.md (@AGENTS.md)
+├── .cursorrules -> AGENTS.md    # Symlink so Cursor reads the same entry point
+├── AI_POLICY.md                 # How AI assistance is disclosed and credited
 ├── CODE_OF_CONDUCT.md           # Contributor Covenant v2.0
 ├── CONTRIBUTING.md              # Contribution guidelines (references Conventional Commits)
 ├── LICENSE                      # BSD 3-Clause License
 ├── README.md                    # Project documentation
 └── onboarded.md                 # Empty file (excluded from pre-commit)
 ```
+
+The documentation site (`docs/` + `mkdocs.yml`) and project memory
+(`knowledge/`) are separate: nothing in `knowledge/` is rendered into the site.
+Build the site with `pixi run docs-build` and preview it with
+`pixi run docs-serve`. Build output goes to `site/`, which is gitignored.
 
 ## Continuous Integration & Validation
 
