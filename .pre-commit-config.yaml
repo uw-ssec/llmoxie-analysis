@@ -15,7 +15,10 @@ repos:
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-symlinks
+      # --unsafe: syntax-only check. mkdocs.yml uses the MkDocs/PyMdown
+      # `!!python/name:` tag, which a safe loader cannot construct.
       - id: check-yaml
+        args: [--unsafe]
       - id: debug-statements
       - id: end-of-file-fixer
       - id: mixed-line-ending
