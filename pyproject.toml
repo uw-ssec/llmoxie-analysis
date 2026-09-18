@@ -78,7 +78,8 @@ pydocstyle.convention = "numpy"
 "scripts/**" = ["T20"]  # build scripts report progress on stdout
 
 [tool.mypy]
-files = ["src", "tests"]
+files = ["src", "tests", "scripts"]
+mypy_path = "scripts"
 python_version = "3.11"
 strict = true
 warn_unreachable = true
