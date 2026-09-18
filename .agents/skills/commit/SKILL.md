@@ -18,16 +18,17 @@ Commit staged and unstaged changes to the current branch.
 3. Analyze ALL changes (staged + unstaged) and determine:
    - The conventional commit type: `feat`, `fix`, `refactor`, `docs`, `chore`,
      `style`, `test`, `perf`, `ci`, `build`
-   - An optional scope in parentheses based on what area changed (e.g.,
-     `marketing`, `platform`, `developer`, `billing`, `db`, `auth`, `worker`,
-     `ui`, `tokens`)
+   - An optional scope in parentheses based on what area changed (e.g., `data`,
+     `pipeline`, `schema`, `io`, `cli`, `viz`, `docs`, `ci`, `deps`, `skills`)
    - A concise imperative description of WHY, not WHAT
 4. Do NOT commit files that likely contain secrets (`.env`, `.env.local`,
    credentials, API keys). Warn if any are staged.
 5. Do NOT commit `.DS_Store` files.
 6. Stage relevant untracked files by name (never use `git add -A` or
    `git add .`).
-7. Create the commit using this format:
+7. Run `pixi run verify` and confirm it exits 0 (the `verify` skill). Do not
+   commit on a failing gate; fix the cause first.
+8. Create the commit using this format:
 
 ```
 git commit -m "$(cat <<'EOF'
@@ -36,33 +37,46 @@ type(scope): short imperative description
 Optional body explaining the why, not the what.
 Multi-line is fine for complex changes.
 
-Co-Authored-By: <tool name>
+Assisted-by: <harness>:<model>
 EOF
 )"
 ```
 
-8. Run `git status` after to verify success.
-9. If a pre-commit hook fails, fix the issue and create a NEW commit (never
-   amend).
+9. Run `git status` after to verify success.
+10. If a pre-commit hook fails, fix the issue and create a NEW commit (never
+    amend).
 
 ## AI Attribution
 
 Disclosure is required, lightweight, and shame-free — its purpose is reviewer
 calibration and later process analysis, not judgment.
 
-On an AI-assisted commit, end the message with a `Co-Authored-By:` trailer
-naming the tool, with **no `<email>` component**:
+This repository follows the Linux kernel's
+[coding assistants guide](https://docs.kernel.org/process/coding-assistants.html).
+On an AI-assisted commit, end the message with an `Assisted-by:` trailer naming
+the harness and the model id, joined by a colon:
 
 ```
-Co-Authored-By: Claude Opus 5 via Claude Code
+Assisted-by: <harness>:<model> [TOOL1] [TOOL2]
 ```
 
-Use the same tool/model/version string as the "AI assistance disclosure" section
-of `.github/pull_request_template.md`, so the commit and the PR agree.
+`<harness>` is the coding agent (Claude Code, Codex CLI, Copilot CLI, OpenCode,
+...) and `<model>` is the model identifier it reports. `[TOOL1] [TOOL2]` are
+optional specialized analysis tools that contributed to the change (for example
+`mypy` when its report drove the fix); do not list basic development tools such
+as git, ruff-format, pytest, or editors. Examples:
 
-Without an email, GitHub does not resolve the trailer to an account — it stays
-plain text in the commit message, readable and greppable for process analysis.
-For naming a tool rather than a person, that is the intended outcome.
+```
+Assisted-by: Claude Code:claude-fable-5-1
+Assisted-by: Codex CLI:gpt-5.3-codex mypy
+```
+
+Use the same harness and model string in the "AI assistance disclosure" section
+of `.github/pull_request_template.md`, so the commits and the PR agree.
+
+An AI agent MUST NOT add a `Signed-off-by:` trailer; only a human can certify
+the Developer Certificate of Origin. A human who signs the commit adds their own
+with `git commit -s` after reviewing every line.
 
 ## Conventional Commit Types
 
@@ -86,8 +100,9 @@ For naming a tool rather than a person, that is the intended outcome.
 - Scope is optional but preferred when changes are localized
 - Never skip hooks (`--no-verify`)
 - Never amend unless explicitly asked
-- On an AI-assisted commit, add a `Co-Authored-By:` trailer naming the tool, in
-  the email-free form shown in [AI Attribution](#ai-attribution)
+- On an AI-assisted commit, add an `Assisted-by: <harness>:<model>` trailer as
+  shown in [AI Attribution](#ai-attribution); never `Co-Authored-By:` for a
+  tool, and never `Signed-off-by:` from an agent
 - An `ai-assisted` label on the PR is an accepted companion or alternative — the
   workflow takes a label and/or a trailer
 - NEVER add "Generated with" or similar marketing lines. This is attribution,

@@ -2,13 +2,13 @@
 name: release
 description:
   Use when a new version needs cutting — a semver bump, changelog entry, git
-  tag, GitHub release, and plugin zip assets.
+  tag, GitHub release, and built wheel/sdist assets.
 ---
 
 # Release
 
-Create a versioned release with changelog, tag, GitHub release, and plugin zip
-assets.
+Create a versioned release with changelog, citation metadata, tag, GitHub
+release, and built wheel/sdist assets.
 
 ## Arguments
 
@@ -45,45 +45,45 @@ analyzing changes.
    - Rename `[Unreleased]` to `[X.Y.Z] -- YYYY-MM-DD` (today's date)
    - Add a new empty `[Unreleased]` section above it
 
-7. Commit the changelog update:
+7. Bump the package version in `src/llmoxie_analysis/__init__.py`
+   (`__version__`, read by Hatchling) and `pixi.toml` (`version`). If
+   `CITATION.cff` exists, set its `version` and `date-released` too.
+
+8. Run `pixi run verify`; it must exit 0.
+
+9. Commit the release preparation:
 
    ```bash
-   git add CHANGELOG.md
-   git commit -m "chore(release): prepare vX.Y.Z" -m "Co-Authored-By: <tool name>"
+   git add CHANGELOG.md pixi.toml src/llmoxie_analysis/__init__.py  # and CITATION.cff if present
+   git commit -m "chore(release): prepare vX.Y.Z" -m "Assisted-by: <harness>:<model>"
    ```
 
-   The trailer carries no `<email>` component — see the `commit` skill for the
-   format. Omit it entirely if the release was cut without AI assistance.
+   The trailer follows the `commit` skill's AI Attribution section. Omit it
+   entirely if the release was cut without AI assistance.
 
-8. Create the git tag:
+10. Create the git tag:
 
-   ```bash
-   git tag -a vX.Y.Z -m "vX.Y.Z"
-   ```
+    ```bash
+    git tag -a vX.Y.Z -m "vX.Y.Z"
+    ```
 
-9. Push the commit and tag:
+11. Push the commit and tag:
 
-   ```bash
-   git push origin main --follow-tags
-   ```
+    ```bash
+    git push origin main --follow-tags
+    ```
 
-10. Build plugin zip assets:
+12. Build the distribution from the tagged commit:
 
-    - For each directory in `plugins/`, create a zip archive
-    - **Zip naming convention:**
-      - Default: `plugin_name_MM_DD_YYYY.zip` (snake_case plugin name + date)
-      - If a release already exists for today (check `gh release list`), append
-        a sequence suffix: `plugin_name_MM_DD_YYYY_2.zip`, `_3.zip`, etc.
-    - Example: `recipe_workshop_03_30_2026.zip`, or
-      `recipe_workshop_03_30_2026_2.zip` for a second release that day
-    - Create zips from within the `plugins/` directory so the zip root is the
-      plugin folder itself:
-      ```bash
-      cd plugins && zip -r ../plugin_name_MM_DD_YYYY.zip plugin-dir-name/ -x "*.DS_Store" "*__pycache__/*" "*.pyc" && cd ..
-      ```
-    - Exclude unnecessary files from zip: `.DS_Store`, `__pycache__`, `*.pyc`
+    ```bash
+    rm -rf dist && pixi run build
+    ```
 
-11. Create a GitHub release with plugin zips as assets:
+    This writes `dist/llmoxie_analysis-X.Y.Z-py3-none-any.whl` and
+    `dist/llmoxie_analysis-X.Y.Z.tar.gz`. Confirm the version in the file names
+    matches the tag.
+
+13. Create a GitHub release with the built artifacts:
 
     ```bash
     gh release create vX.Y.Z --title "vX.Y.Z" \
@@ -92,19 +92,16 @@ analyzing changes.
 
     <extract the relevant section from CHANGELOG.md>
 
-    ## Plugin Assets
-
-    <list each plugin zip with name and description>
-
     **Full Changelog**: <repo compare URL>/compare/vPREVIOUS...vX.Y.Z
     EOF
     )" \
-      plugin_name_MM_DD_YYYY.zip
+      dist/*.whl dist/*.tar.gz
     ```
 
-12. Clean up zip files from the repo root after successful upload.
+    If the repository is linked to Zenodo, the release triggers a DOI
+    automatically; add the DOI to `CITATION.cff` in a follow-up commit.
 
-13. Confirm: "Released vX.Y.Z — <release URL>"
+14. Confirm: "Released vX.Y.Z — <release URL>"
 
 ## Version Guidelines
 
@@ -113,14 +110,6 @@ analyzing changes.
 | `patch` (0.1.X) | Bug fixes, docs, chores, refactors | `v0.1.1` → `v0.1.2` |
 | `minor` (0.X.0) | New features, non-breaking changes | `v0.1.2` → `v0.2.0` |
 | `major` (X.0.0) | Breaking changes, major rewrites   | `v0.2.0` → `v1.0.0` |
-
-## Zip Naming Rules
-
-- Plugin directory name is converted to snake_case: `recipe-workshop` →
-  `recipe_workshop`
-- Date format is `MM_DD_YYYY`
-- Sequence suffix only added when multiple releases occur on the same day
-- Sequence starts at `_2` (first release of the day has no suffix)
 
 ## Rules
 
@@ -131,6 +120,6 @@ analyzing changes.
 - Ask for confirmation before pushing the tag and creating the release
 - If CHANGELOG.md doesn't exist or has no `[Unreleased]` section, warn and ask
   how to proceed
-- Never commit generated zip files — they are upload artifacts only
+- Never commit `dist/` — build artifacts are upload-only (gitignored)
 - NEVER add "Generated with" or similar marketing lines to the release notes
 - NEVER include sensitive information in the release notes or changelog

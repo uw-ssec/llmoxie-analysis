@@ -29,8 +29,13 @@ pixi run pre-commit-all
 To check a specific file, pass it through the task:
 `pixi run pre-commit --files <path>`.
 
+**The full gate is `pixi run verify`:** it runs `pre-commit-all`, then mypy
+(`typecheck`), pytest (`test`), and a wheel/sdist build (`build`), stopping at
+the first failure. Pre-commit alone covers formatting and hygiene only.
+
 **Pre-commit Hooks Configured:**
 
+- ruff-check (with `--fix`) and ruff-format (Python lint and formatting)
 - check-added-large-files, check-case-conflict, check-merge-conflict
 - check-yaml, check-symlinks
 - fix-end-of-files, trim-trailing-whitespace, mixed-line-ending
@@ -69,10 +74,10 @@ To check a specific file, pass it through the task:
 4. **Before creating a PR:**
 
    ```bash
-   # Run all checks on all files
-   pixi run pre-commit-all
+   # Run the full gate: pre-commit on all files, mypy, pytest, build
+   pixi run verify
 
-   # Verify all checks pass (should show all "Passed" or "Skipped")
+   # Verify every step passes (exit 0; pre-commit shows "Passed" or "Skipped")
    ```
 
 5. **Create PR:** work through the checklist in

@@ -36,3 +36,49 @@ path = "src/llmoxie_analysis/__init__.py"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+src = ["src"]
+line-length = 88
+
+[tool.ruff.lint]
+extend-select = [
+    "ARG", # flake8-unused-arguments
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "D",   # pydocstyle
+    "EM",  # flake8-errmsg
+    "EXE", # flake8-executable
+    "G",   # flake8-logging-format
+    "I",   # isort
+    "ICN", # flake8-import-conventions
+    "NPY", # NumPy specific rules
+    "PGH", # pygrep-hooks
+    "PIE", # flake8-pie
+    "PL",  # pylint
+    "PT",  # flake8-pytest-style
+    "PTH", # flake8-use-pathlib
+    "RET", # flake8-return
+    "RUF", # Ruff-specific
+    "SIM", # flake8-simplify
+    "T20", # flake8-print
+    "UP",  # pyupgrade
+    "YTT", # flake8-2020
+]
+ignore = [
+    "PLR09",   # too many branches/args/statements
+    "PLR2004", # magic values in comparisons
+    "ISC001",  # conflicts with the formatter
+]
+isort.required-imports = ["from __future__ import annotations"]
+pydocstyle.convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "T20"]
+
+[tool.mypy]
+files = ["src", "tests"]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]

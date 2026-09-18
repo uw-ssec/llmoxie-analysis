@@ -21,15 +21,18 @@ Create a pull request for the current branch.
 
 2. If there are uncommitted changes, ask whether to commit first.
 
-3. If the branch hasn't been pushed, push with `git push -u origin <branch>`.
+3. Run `pixi run verify` (the `verify` skill). It must exit 0; paste its final
+   lines into the PR's test plan. Never open a PR on a failing gate.
 
-4. Analyze ALL commits in the branch (not just the latest) to draft:
+4. If the branch hasn't been pushed, push with `git push -u origin <branch>`.
+
+5. Analyze ALL commits in the branch (not just the latest) to draft:
 
    - **Title**: Use conventional commit format: `type(scope): short description`
      (under 70 chars)
    - **Body**: Structured summary with test plan
 
-5. Create the PR:
+6. Create the PR:
 
 ```bash
 gh pr create --title "type(scope): description" --body "$(cat <<'EOF'
@@ -40,13 +43,14 @@ gh pr create --title "type(scope): description" --body "$(cat <<'EOF'
 <bulleted list of specific changes, grouped by area if needed>
 
 ## Test plan
+- [ ] `pixi run verify` exits 0 (paste the final lines)
 - [ ] <specific testable checklist items>
 EOF
 )"
 ```
 
-6. If there's a related issue, add `Closes #N` in the body.
-7. Return the PR URL to the user.
+7. If there's a related issue, add `Closes #N` in the body.
+8. Return the PR URL to the user.
 
 ## Title Convention
 
@@ -67,8 +71,8 @@ Use the same conventional commit types as the `commit` skill:
   commit type
 - On an AI-assisted PR, disclose it: fill the "AI assistance disclosure" section
   of `.github/pull_request_template.md`, and/or apply the `ai-assisted` label.
-  Commits may carry a `Co-Authored-By:` trailer naming the tool, with **no
-  `<email>` component** — see the `commit` skill for the format
+  AI-assisted commits carry an `Assisted-by: <harness>:<model>` trailer and
+  never an agent-added `Signed-off-by:` — see the `commit` skill for the format
 - NEVER add "Generated with" or similar marketing lines to PR titles or bodies.
   This is attribution, not promotion
 - If the PR is large or complex, consider breaking it into smaller PRs with

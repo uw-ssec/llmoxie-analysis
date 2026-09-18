@@ -24,7 +24,7 @@ prompt the user.
    - `git for-each-ref --sort=-committerdate --format='%(refname:short) %(committerdate:relative) %(upstream:track)' refs/heads/`
      (local branches with age and tracking status)
 
-2. Categorize each branch (excluding `main` and `feedback-screenshots`):
+2. Categorize each branch (excluding `main`):
 
    | Category            | Definition                                                        |
    | ------------------- | ----------------------------------------------------------------- |
@@ -57,7 +57,7 @@ prompt the user.
 
 ## Rules
 
-- NEVER delete `main`, `master`, or `feedback-screenshots` branches
+- NEVER delete `main` or `master`
 - NEVER force-delete (`-D`) without explicit user confirmation
 - Always show what will be deleted before doing it
 - If a branch has unmerged commits, warn the user and ask before force-deleting
