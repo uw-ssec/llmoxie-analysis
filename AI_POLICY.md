@@ -19,8 +19,9 @@ be closed.
 Only humans can be named as co-authors, and AI can _never_ sign off on a commit.
 The
 [Linux kernel trailer](https://docs.kernel.org/process/coding-assistants.html)
-is used to credit AI assistance, naming the coding agent and the model
-identifier it reports, joined by a colon:
+is used to credit AI assistance, naming the coding agent as a lowercase,
+hyphenated slug and the model identifier it reports, joined by a colon into one
+machine-readable token:
 
 ```text
 Assisted-by: <harness>:<model>
@@ -29,11 +30,11 @@ Assisted-by: <harness>:<model>
 For example:
 
 ```text
-Assisted-by: Claude Code:claude-fable-5-1
+Assisted-by: claude-code:claude-fable-5-1
 ```
 
 Specialized analysis tools that contributed to the change may follow the model
-(for example `Assisted-by: Claude Code:claude-fable-5-1 mypy`); basic tools such
+(for example `Assisted-by: claude-code:claude-fable-5-1 mypy`); basic tools such
 as git, formatters, and test runners are not listed. Use the same harness and
 model string in the PR's disclosure section so the commits and the pull request
 agree.
