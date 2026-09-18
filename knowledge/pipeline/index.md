@@ -1,0 +1,9 @@
+# Pipeline
+* [Analytics Schema — Four Tables](analytics-schema.md) - The sessions, messages, tool_calls, and tool_definitions tables the pipeline emits, their key columns, and the conventions that make them joinable.
+* [Scheduled Execution on Azure Container Apps](container-apps-job.md) - The pipeline runs as a scheduled Azure Container Apps Job provisioned by Pulumi, following the existing backup-job pattern and gated behind an opt-in config flag.
+* [Idempotency: Manifest and Partition Overwrite](idempotency-design.md) - Two independent layers — a content-hash manifest that skips unchanged inputs and whole-partition overwrite that makes reprocessing safe — let any run be repeated without duplicating or corrupting data.
+* [Pipeline Architecture](pipeline-architecture.md) - The four-stage design that turns raw gateway logs into partitioned Parquet, and the layering rule that keeps the transform core free of cloud dependencies.
+* [The llmaven data pipeline run CLI](pipeline-cli.md) - The single operator-facing command, its flags, the credentials each source mode requires, and the validation that happens before any data is read.
+* [Query Layer: DuckDB and Synapse Serverless](query-layer.md) - Two query engines read the same Parquet files — DuckDB for local and notebook work, Azure Synapse Serverless SQL for shared access — with one helper function as the only connection path.
+* [Source Adapters and Auto Detection](source-adapters.md) - How data/sources.py normalizes ADLS blobs and LiteLLM spend-log rows into one common record shape, and why source selection resolves per day.
+* [Storage Layout and Parquet I/O](storage-layout.md) - The single module that owns every read and write, the Hive-partitioned output path it produces, and the atomic write that makes partition overwrite safe.
