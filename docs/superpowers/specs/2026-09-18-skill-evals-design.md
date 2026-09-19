@@ -72,9 +72,10 @@ evals/
 3. Solver: `system_message(skill_body)`, `generate()`.
 4. Scorer: a custom `@scorer` that lower-cases the completion and checks every
    `must` entry appears and no `must_not` entry appears. An entry prefixed
-   `regex:` is matched as a case-insensitive regular expression instead of a
-   substring. Score is `CORRECT` only when all rules hold; the explanation names
-   the first failing rule so `inspect view` shows why.
+   `regex:` is matched as a case-sensitive multiline regular expression instead
+   of a substring, so `-d` and `-D` stay distinct. Score is `CORRECT` only when
+   all rules hold; the explanation names the first failing rule so
+   `inspect view` shows why.
 5. `smoke=True` pins the model to `mockllm/model` replaying each sample's
    `smoke_answer` in order. Deterministic, no API key.
 
