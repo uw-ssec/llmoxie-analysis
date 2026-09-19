@@ -38,8 +38,9 @@ verify = { depends-on = [
     "okf-validate",
     "typecheck",
     "test",
+    { task = "inspect-smoke", environment = "evals" },
     "build",
-], description = "The quality gate: format+lint, knowledge bundle, type-check, tests, build. Must exit 0 before commit or PR" }
+], description = "The quality gate: format+lint, knowledge bundle, type-check, tests, skill evals (mock), build. Must exit 0 before commit or PR" }
 setup = { cmd = "git submodule update --init --recursive", depends-on = [
     "pre-commit-install",
 ], description = "One-time setup after pixi install: git hooks and the read-only reference/ submodules" }
@@ -108,4 +109,4 @@ harbor-oracle = { cmd = "harbor run -p evals/harbor/tasks -a oracle -o evals/log
 harbor-agent = { cmd = "harbor run -p evals/harbor/tasks -a claude-code -o evals/logs/harbor --force-build", depends-on = ["harbor-base"], description = "Run every harbor task with a real agent, e.g. pixi run -e evals harbor-agent -m anthropic/claude-haiku-4-5" }
 harbor-view = { cmd = "harbor view evals/logs/harbor", description = "Open the Harbor trajectory viewer for local job logs" }
 # --- Combined --------------------------------------------------------------
-evals-smoke = { depends-on = ["inspect-smoke", "harbor-oracle"], description = "Run both smoke tests end to end" }
+evals-smoke = { depends-on = ["inspect-smoke", "harbor-oracle"], description = "Inspect smoke then every harbor task with the oracle agent (needs Docker)" }

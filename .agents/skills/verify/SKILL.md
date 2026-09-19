@@ -22,6 +22,7 @@ It runs, in order, and stops at the first failure:
 | `okf-validate`   | okf check of `knowledge/`; warnings print but do not fail        |
 | `typecheck`      | mypy, strict, over `src/` and `tests/`                           |
 | `test`           | pytest over `tests/`                                             |
+| `inspect-smoke`  | every skill's Inspect eval against canned answers (`evals/`)     |
 | `build`          | wheel and sdist build into `dist/` (packaging metadata is valid) |
 
 Each step is also a pixi task you can run alone; `pixi run lint` runs ruff

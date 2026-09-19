@@ -31,3 +31,29 @@ def test_shims_self_test() -> None:
         ["bash", str(SHIMS_TEST)], capture_output=True, text=True, check=False
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+HARBOR_TASKS_DIR = ROOT / "evals" / "harbor" / "tasks"
+HARBOR_TASK_FILES = (
+    "task.toml",
+    "instruction.md",
+    "environment/Dockerfile",
+    "solution/solve.sh",
+    "tests/test.sh",
+)
+
+
+def test_every_skill_has_harbor_task() -> None:
+    missing = [name for name in SKILL_NAMES if not (HARBOR_TASKS_DIR / name).is_dir()]
+    assert missing == []
+
+
+def test_every_harbor_task_is_complete() -> None:
+    incomplete = [
+        f"{task.name}/{rel}"
+        for task in sorted(HARBOR_TASKS_DIR.iterdir())
+        if task.is_dir()
+        for rel in HARBOR_TASK_FILES
+        if not (task / rel).is_file()
+    ]
+    assert incomplete == []
