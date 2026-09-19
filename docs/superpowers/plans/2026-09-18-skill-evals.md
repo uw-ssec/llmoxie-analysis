@@ -2755,19 +2755,18 @@ ADLS listings are per-day, so a daily partition maps one listing to one write.
 graph TD
     A[Raw request logs] -->|per-day listing| B[build_sessions]
     B -->|Parquet partition| C[sessions/date=YYYY-MM-DD]
-````
+```
 
 ## API
 
 | Function              | Returns                        |
-| --------------------- | ------------------------------ |
+| ---------------------- | ------------------------------- |
 | `build_sessions(day)` | row count written for that day |
-
-EOF printf ' - Architecture:\n - Sessions table: architecture/sessions.md\n' >>
-mkdocs.yml printf -- '- [Sessions table](architecture/sessions.md): how the
-sessions table is built and partitioned.\n' >> docs/index.md pixi run docs-build
+EOF
+printf '  - Architecture:\n      - Sessions table: architecture/sessions.md\n' >> mkdocs.yml
+printf -- '- [Sessions table](architecture/sessions.md): how the sessions table is built and partitioned.\n' >> docs/index.md
+pixi run docs-build
 echo "Created docs/architecture/sessions.md; nav entry added; build passed."
-
 ````
 
 `tests/test.sh`:

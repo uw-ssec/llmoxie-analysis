@@ -91,9 +91,10 @@ synced skills directory, a fixed git identity, and
 `GIT_AUTHOR_DATE`/`GIT_COMMITTER_DATE` helpers so fixture ages are stable.
 
 Every shim is a bash script that appends `"<epoch-seconds> <tool> <args>"` to
-`/logs/shims/<tool>.log`, captures stdin into the same log when present (for
+`/var/log/skill-shims/<tool>.log`, captures stdin into the same log when present (for
 `gh` heredoc bodies), and then matches on the subcommand. The timestamp lets
-verifiers order shim calls against git commit times:
+verifiers order shim calls against git commit times. The verifier copies that
+directory to `/logs/verifier/shims` so the host can inspect it.
 
 | Shim   | Canned behavior                                                                                                                                                                                                                                                                                                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

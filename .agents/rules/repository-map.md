@@ -38,6 +38,7 @@ the working prototypes live in the `reference/` submodules.
 │   ├── workflows/               # GitHub Actions (zizmor workflow linting, Copilot agent setup)
 │   └── ISSUE_TEMPLATE/          # Issue templates (bug, feature, docs, onboard, etc.)
 ├── docs/                        # Documentation site source: hand-written Markdown pages
+├── evals/                       # Skill evals: Inspect harness and samples, Harbor base image and task directories; see evals/README.md
 ├── knowledge/                   # Project memory (OKF bundle); read and write via the okf-memory skill
 ├── reference/                   # Read-only git submodules: llmoxie, ceil-dlp (upstream prototypes)
 ├── src/llmoxie_analysis/        # The package; __version__ lives in __init__.py
@@ -71,6 +72,9 @@ Build the site with `pixi run docs-build` and preview it with
 [zizmor](https://github.com/zizmorcore/zizmor) static analysis to lint workflow
 files for security issues. Changes to anything under `.github/workflows/` must
 keep this check passing.
+
+**Skill evals:** `.github/workflows/skill-evals.yml` runs the Inspect and Harbor
+skill evals (see `evals/README.md`).
 
 **Copilot cloud agent:** `.github/workflows/copilot-setup-steps.yml` prepares
 the GitHub Copilot coding agent's environment (pixi install from `pixi.lock`,
