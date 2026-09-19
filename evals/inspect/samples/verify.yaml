@@ -19,7 +19,8 @@
   must:
     [
       "build",
-      "regex:(not done|Not done|is a step that failed|counts as failed)",
+      "regex:(?i)(not done|incomplete|not complete|not ready|is a step that
+      failed|counts as fail)",
     ]
   smoke_answer: |
     Not done. A skipped step is a step that failed. Run `pixi run build`

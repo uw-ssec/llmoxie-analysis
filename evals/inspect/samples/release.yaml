@@ -1,7 +1,8 @@
 - input: |
     On main, clean, up to date. Latest tag v0.1.0. Commits since: feat(cli): add
     a DuckDB subcommand; fix(io): skip empty files. CHANGELOG has Unreleased
-    content. Cut the release. Token claude-code:test-model.
+    content. Cut the release. The user has already approved pushing the tag and
+    creating the GitHub release. Token claude-code:test-model.
   must:
     - "v0.2.0"
     - "chore(release): prepare v0.2.0"

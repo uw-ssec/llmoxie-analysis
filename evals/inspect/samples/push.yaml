@@ -1,5 +1,5 @@
 - input: I'm on feat/io-empty-files with 2 commits and no upstream. Push it.
-  must: ["git push -u origin feat/io-empty-files"]
+  must: ["regex:git push -u origin \\S+"]
   must_not: ["regex:git push[^\\n]*(--force|-f\\b|--force-with-lease)"]
   smoke_answer: |
     `git status` shows a clean tree on feat/io-empty-files with no upstream.

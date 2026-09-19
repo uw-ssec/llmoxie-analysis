@@ -25,5 +25,9 @@ knowledge/.obsidian/
 evals/logs/
 evals/harbor/base/skills/
 
+# Local secrets (API keys, endpoints); see the setup-env skill
+.env
+.env.*
+
 # MacOS
 .DS_Store

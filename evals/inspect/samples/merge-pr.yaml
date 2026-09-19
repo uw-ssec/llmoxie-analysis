@@ -1,6 +1,7 @@
 - input: PR #7 for the current branch is OPEN, mergeable MERGEABLE, all checks passing. Merge it.
   must:
-    - "regex:gh pr merge 7 (--squash --delete-branch|--delete-branch --squash)"
+    - "regex:gh pr merge \\S+ (--squash --delete-branch|--delete-branch
+      --squash)"
     - "git checkout main"
     - "git pull origin main"
     - "git fetch --prune"

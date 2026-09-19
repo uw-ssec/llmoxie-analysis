@@ -44,6 +44,40 @@ pixi run -e evals inspect-view                                   # browse Inspec
 pixi run -e evals harbor-view                                    # browse Harbor trajectories
 ```
 
+## Running against the LLMaven gateway
+
+The gateway is a LiteLLM proxy. Put its URL and token in a gitignored `.env` at
+the repository root as `LLMOXIE_ENDPOINT` and `LLMOXIE_API_TOKEN`, then map them
+to the client each framework uses:
+
+```bash
+set -a; . ./.env; set +a
+# Inspect: the anthropic provider works for every gateway model, because the
+# proxy speaks the Anthropic messages API and routes on the model name.
+export ANTHROPIC_API_KEY="$LLMOXIE_API_TOKEN" ANTHROPIC_BASE_URL="${LLMOXIE_ENDPOINT%/}"
+pixi run -e evals inspect-skill -T name=all --model anthropic/gpt-oss-120b --max-connections 4
+# Harbor with a GPT-family model: the codex agent reads skills from ~/.agents/skills.
+export OPENAI_API_KEY="$LLMOXIE_API_TOKEN" OPENAI_BASE_URL="${LLMOXIE_ENDPOINT%/}/v1"
+pixi run -e evals harbor run -p evals/harbor/tasks/commit -a codex -m gpt-5.4-mini -o evals/logs/harbor --force-build
+# Harbor with a Claude-family model: the claude-code agent, through the same ANTHROPIC_* variables.
+pixi run -e evals harbor run -p evals/harbor/tasks/commit -a claude-code -m ssec-claude-haiku-4-5 -o evals/logs/harbor --force-build
+```
+
+Known limits, all observed on 2026-09-19:
+
+- Inspect's `openai` and `openai-api` providers need `openai>=3.1`, which
+  Harbor's litellm pin (`openai<3`) forbids in the same environment. Use the
+  anthropic provider for gateway models instead.
+- The Azure-hosted GPT deployments reject the parameters the proxy produces when
+  translating Anthropic-format requests (`gpt-5.4-mini` fails on both Inspect
+  and claude-code that way). Non-Azure models such as `gpt-oss-120b` and
+  `gemma-4-31b` work; GPT models work through the OpenAI route (codex).
+- The claude-code agent sends Anthropic-only parameters (`context_management`)
+  that the proxy cannot translate for non-Claude models, so pair it with a
+  Claude-family model.
+- Real-model Inspect scores are noisy between runs (temperature); compare a rule
+  change on two runs before trusting a moved sample.
+
 ## How scoring works
 
 Inspect: a sample's reply is CORRECT only if every `must` matches and no

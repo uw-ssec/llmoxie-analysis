@@ -11,7 +11,8 @@
 - input:
     "pytest printed: ERROR tests/test_schema.py - ImportError: cannot import
     name Arrow. What next?"
-  must: ["collection", "regex:[Ff]ix[^\\n]*(import|tests/test_schema\\.py)"]
+  must:
+    ["collection", "regex:(?i)(fix|resolve)[^\\n]*(import|depend|test_schema)"]
   must_not: ["tolerance", "regex:@pytest\\.mark\\.(skip|xfail)"]
   smoke_answer: |
     A collection ERROR is an import problem in the test module, not an

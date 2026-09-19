@@ -93,6 +93,7 @@ importlib-metadata = "<9"
 [feature.evals.pypi-dependencies]
 harbor = ">=0.23.0"
 inspect-ai = ">=0.3.263"
+anthropic = ">=0.40"
 
 [feature.evals.tasks]
 # --- Inspect ---------------------------------------------------------------

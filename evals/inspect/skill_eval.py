@@ -39,6 +39,11 @@ ROOT = Path(__file__).resolve().parents[2]
 SKILL_ROOTS = (ROOT / ".agents" / "skills", ROOT / "evals" / "skills")
 SAMPLES_DIR = Path(__file__).resolve().parent / "samples"
 REGEX_PREFIX = "regex:"
+TEXT_ONLY_NOTE = (
+    "\n\n---\n\nThis is a text-only review: you cannot run commands or call tools. "
+    "Reply with the exact commands you would run, in order, and anything you "
+    "would say or ask the user."
+)
 
 
 def skill_body(name: str) -> str:
@@ -164,7 +169,7 @@ def inject_skill() -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:  # noqa: ARG001  # Inspect solver signature
         """Inspect callback."""
         state.messages.insert(
-            0, ChatMessageSystem(content=state.metadata["skill_body"])
+            0, ChatMessageSystem(content=state.metadata["skill_body"] + TEXT_ONLY_NOTE)
         )
         return state
 
