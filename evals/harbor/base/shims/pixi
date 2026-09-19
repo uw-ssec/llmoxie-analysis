@@ -1,0 +1,55 @@
+#!/bin/bash
+# Fake pixi for skill evals. Every task succeeds unless /fixture/pixi says otherwise.
+set -uo pipefail
+. "${SKILL_SHIM_LIB:-/usr/local/lib/skill-evals/shimlib.sh}"
+shim_record pixi "$@"
+
+sub="${1:-}"
+[ $# -gt 0 ] && shift
+case "$sub" in
+  --version)
+    echo "pixi 0.81.0" ;;
+  install)
+    echo "✔ The default environment has been installed." ;;
+  run)
+    task="${1:-}"
+    [ $# -gt 0 ] && shift
+    case "$task" in
+      verify)
+        if [ -f "$SHIM_FIXTURE_DIR/pixi/verify-fails" ]; then
+          echo "ruff check...............................................................Failed"
+          echo "src/llmoxie_analysis/io.py:12:1: F401 'os' imported but unused"
+          exit 1
+        fi
+        for step in pre-commit-all okf-validate typecheck test build; do
+          echo "✨ Pixi task ($step in default): ok"
+        done
+        echo "Successfully built llmoxie_analysis-0.1.0-py3-none-any.whl and llmoxie_analysis-0.1.0.tar.gz" ;;
+      test)
+        echo "============================== 29 passed in 0.07s ==============================" ;;
+      pytest)
+        for a in "$@"; do
+          case "$a" in
+            -*) ;;
+            *) echo "$a PASSED" ;;
+          esac
+        done
+        echo "============================== 1 passed in 0.01s ===============================" ;;
+      build)
+        version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' src/llmoxie_analysis/__init__.py 2>/dev/null | head -1)"
+        version="${version:-0.0.0}"
+        mkdir -p dist
+        : > "dist/llmoxie_analysis-$version-py3-none-any.whl"
+        : > "dist/llmoxie_analysis-$version.tar.gz"
+        echo "Successfully built llmoxie_analysis-$version-py3-none-any.whl and llmoxie_analysis-$version.tar.gz" ;;
+      docs-build)
+        echo "INFO - Documentation built in 0.42 seconds" ;;
+      okf)
+        okf "$@"
+        exit $? ;;
+      *)
+        echo "✨ Pixi task ($task in default): ok" ;;
+    esac ;;
+  *) ;;
+esac
+exit 0

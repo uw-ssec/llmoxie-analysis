@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,3 +21,13 @@ def test_every_skill_has_inspect_samples() -> None:
         name for name in SKILL_NAMES if not (SAMPLES_DIR / f"{name}.yaml").is_file()
     ]
     assert missing == []
+
+
+SHIMS_TEST = ROOT / "evals" / "harbor" / "base" / "shims" / "test_shims.sh"
+
+
+def test_shims_self_test() -> None:
+    result = subprocess.run(
+        ["bash", str(SHIMS_TEST)], capture_output=True, text=True, check=False
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

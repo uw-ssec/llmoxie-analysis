@@ -102,8 +102,10 @@ inspect-view = { cmd = "inspect view --log-dir evals/logs/inspect", description 
 # Docker build contexts can't follow symlinks out of the context directory, so
 # the canonical skills in evals/skills/ are copied into the task's environment
 # before each run. The copy is gitignored.
-harbor-sync-skills = { cmd = "rm -rf evals/harbor/tasks/greeting-file/environment/skills && mkdir -p evals/harbor/tasks/greeting-file/environment/skills && cp -R evals/skills/greeting-file evals/harbor/tasks/greeting-file/environment/skills/greeting-file", description = "Copy evals/skills into the harbor task build context" }
-harbor-oracle = { cmd = "harbor run -p evals/harbor/tasks/greeting-file -a oracle -o evals/logs/harbor -q", depends-on = ["harbor-sync-skills"], description = "Verify the greeting-file harbor task with the oracle agent (runs solution/solve.sh, needs Docker)" }
+harbor-sync = { cmd = "rm -rf evals/harbor/base/skills && mkdir -p evals/harbor/base/skills && cp -R .agents/skills/. evals/harbor/base/skills/ && cp -R evals/skills/. evals/harbor/base/skills/", description = "Copy every skill into the harbor base image build context (gitignored)" }
+harbor-base = { cmd = "docker build -t llmoxie-skill-evals-base:local evals/harbor/base", depends-on = ["harbor-sync"], description = "Build the shared harbor base image: git, fake gh/pixi/okf, all skills" }
+harbor-oracle = { cmd = "harbor run -p evals/harbor/tasks -a oracle -o evals/logs/harbor --force-build -q", depends-on = ["harbor-base"], description = "Run every harbor task with the oracle agent (needs Docker)" }
+harbor-agent = { cmd = "harbor run -p evals/harbor/tasks -a claude-code -o evals/logs/harbor --force-build", depends-on = ["harbor-base"], description = "Run every harbor task with a real agent, e.g. pixi run -e evals harbor-agent -m anthropic/claude-haiku-4-5" }
 harbor-view = { cmd = "harbor view evals/logs/harbor", description = "Open the Harbor trajectory viewer for local job logs" }
 # --- Combined --------------------------------------------------------------
 evals-smoke = { depends-on = ["inspect-smoke", "harbor-oracle"], description = "Run both smoke tests end to end" }

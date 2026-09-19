@@ -23,7 +23,7 @@ knowledge/.obsidian/
 
 # Skill evals: run logs and the skills copy synced into harbor build contexts
 evals/logs/
-evals/harbor/tasks/*/environment/skills/
+evals/harbor/base/skills/
 
 # MacOS
 .DS_Store
