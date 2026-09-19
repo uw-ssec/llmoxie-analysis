@@ -3,7 +3,7 @@ type: Process
 title: Skill Evaluation with Inspect and Harbor
 description: "Every skill under .agents/skills is evaluated at two levels: Inspect with deterministic must/must-not rules on the verify gate, and Harbor in a Docker sandbox with fake gh/pixi/okf that log every call; the decision log records why."
 tags: [evals, inspect, harbor, skills, pixi, testing]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T04:41:42Z" }
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T05:14:55Z" }
 sources:
   - resource: docs/superpowers/specs/2026-09-18-skill-evals-design.md on branch worktree-inspect-harbor-pixi
   - resource: llmoxie-analysis evals/README.md on branch worktree-inspect-harbor-pixi
@@ -142,9 +142,38 @@ The Inspect smoke is deterministic and keyless, so it is part of
 `pixi run verify`. Harbor needs a Docker daemon on the host, which is the main
 reason an agent may be unable to run the agent-level half locally.
 
+## Running against the LLMaven gateway (observed 2026-09-19)
+
+The gateway is a LiteLLM proxy; credentials live in a gitignored `.env`
+(`LLMOXIE_ENDPOINT`, `LLMOXIE_API_TOKEN`). What worked and what did not:
+
+- Inspect reaches gateway models only through its `anthropic` provider
+  (`ANTHROPIC_BASE_URL` + `ANTHROPIC_API_KEY`, model `anthropic/<name>`): the
+  proxy speaks the Anthropic messages API for any model. The `openai` and
+  `openai-api` providers need `openai>=3.1`, which Harbor's litellm pin
+  (`openai<3`) forbids in the same environment; no stable litellm lifts it.
+- Azure-hosted GPT deployments (`gpt-5.4-mini`) reject parameters the proxy
+  produces when translating Anthropic-format requests; non-Azure models
+  (`gpt-oss-120b`, `gemma-4-31b`) work on that route.
+- Harbor's `claude-code` agent sends Anthropic-only parameters
+  (`context_management`) the proxy cannot translate for non-Claude models, so it
+  needs a Claude-family model. Harbor's `codex` agent works for GPT models
+  through `OPENAI_BASE_URL` and reads skills from `~/.agents/skills`.
+- First real-model results on the 39 Inspect samples: gemma-4-31b 0.795,
+  gpt-oss-120b 0.667. The `commit` Harbor task scored 1.0 with codex on
+  gpt-5.4-mini and with claude-code on ssec-claude-haiku-4-5, with the
+  trajectory showing the agent reading `commit/SKILL.md` and `verify/SKILL.md`.
+- The first real runs exposed rules that failed correct replies (case and
+  curly-apostrophe variants of "can't delete main", a release input that never
+  approved the tag, text-only models emitting pseudo tool calls). The injected
+  skill now states the review is text-only, and those rules were loosened.
+  Scores are noisy between runs; compare a rule change on two runs.
+
 ## Status
 
-Implemented on branch `worktree-inspect-harbor-pixi` on 2026-09-19: all twelve skills have Inspect samples and Harbor tasks, the Inspect smoke runs inside `pixi run verify`, and the Harbor matrix scored 18 of 18 under the oracle. Pending merge to `main`; `evals/` on `main` is still empty until then.
+Implemented on branch `worktree-inspect-harbor-pixi` and exercised against the
+LLMaven gateway on 2026-09-19 (see the section above). Pending merge to `main`;
+`evals/` on `main` is still empty until then.
 
 # Related Concepts
 - [Skill Evals Implementation Plan](skill-evals-plan.md): The plan that implements this design, with the decisions made while planning it.
