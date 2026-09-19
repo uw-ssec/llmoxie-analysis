@@ -95,7 +95,8 @@ inspect-ai = ">=0.3.263"
 
 [feature.evals.tasks]
 # --- Inspect ---------------------------------------------------------------
-inspect-smoke = { cmd = "inspect eval evals/inspect/greeting_file.py -T smoke=true --display plain --log-dir evals/logs/inspect", description = "Run the greeting-file skill eval against the mock model (no API key needed)" }
+inspect-smoke = { cmd = "inspect eval evals/inspect/skill_eval.py -T smoke=true --model mockllm/model --display plain --log-dir evals/logs/inspect", description = "Every skill eval against canned answers (no API key, deterministic)" }
+inspect-skill = { cmd = "inspect eval evals/inspect/skill_eval.py --display plain --log-dir evals/logs/inspect", description = "One skill against a real model, e.g. pixi run -e evals inspect-skill -T name=commit --model anthropic/claude-haiku-4-5" }
 inspect-view = { cmd = "inspect view --log-dir evals/logs/inspect", description = "Open the Inspect log viewer for local eval logs" }
 # --- Harbor ----------------------------------------------------------------
 # Docker build contexts can't follow symlinks out of the context directory, so
