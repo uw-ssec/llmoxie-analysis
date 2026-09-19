@@ -21,6 +21,10 @@ cd "$tmp/work"
 check test "$(gh issue create --title 'fix(io): x' --body "$(printf '## Summary\nbody\n')")" = "https://github.com/example/llmoxie-analysis/issues/42"
 check grep -Eq '^[0-9]+ gh issue create --title' "$SKILL_SHIM_LOG_DIR/gh.log"
 check grep -q '^## Summary' "$SKILL_SHIM_LOG_DIR/gh.args"
+# single-line flag value: shim_arg-equivalent lookup returns the full title
+check test "$(awk -v flag="--title" 'prev == flag { print; exit } { prev = $0 }' "$SKILL_SHIM_LOG_DIR/gh.args")" = "fix(io): x"
+# multi-line value: body is line-addressable via a line-anchored grep
+check grep -q '^body$' "$SKILL_SHIM_LOG_DIR/gh.args"
 printf '{\n  "number": 7,\n  "headRefName": "feat/x"\n}\n' > "$tmp/fixture/gh/pr.json"
 check test "$(gh pr view 7 --json number)" = "$(cat "$tmp/fixture/gh/pr.json")"
 # gh pr merge: remote main fast-forwards to the head branch, head branch dropped

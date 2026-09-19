@@ -5,7 +5,10 @@ SHIM_REMOTE="${SKILL_SHIM_REMOTE:-/remote/origin.git}"
 SHIM_GIT="${SKILL_SHIM_GIT:-/usr/bin/git}"
 
 # shim_record <tool> "$@" -- append the call to <tool>.log (one line, embedded
-# newlines flattened) and <tool>.args (one argument per line, for exact lookups).
+# newlines flattened) and <tool>.args (one argument per line, and a multi-line
+# argument spans as many lines as it has, so .args is for line-anchored greps
+# (shim_args_have) and for single-line flag values (shim_arg); multi-line
+# values must not be read with shim_arg).
 shim_record() {
   local tool="$1"
   shift

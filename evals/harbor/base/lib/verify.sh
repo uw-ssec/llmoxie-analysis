@@ -18,7 +18,9 @@ shim_log() { cat "$SHIM_LOG_DIR/$1.log" 2>/dev/null; }
 shim_called() { shim_log "$1" | grep -Eq -- "$2"; }
 shim_not_called() { ! shim_called "$1" "$2"; }
 shim_first_ts() { shim_log "$1" | grep -E -- "$2" | head -1 | cut -d' ' -f1; }
-# shim_arg <tool> <flag> -- value that followed <flag> in the first matching call
+# shim_arg <tool> <flag> -- value that followed <flag> in the first matching call;
+# single-line values only (titles, ids) -- for multi-line values such as bodies
+# use shim_args_have with a line-anchored regex
 shim_arg() { awk -v flag="$2" 'prev == flag { print; exit } { prev = $0 }' "$SHIM_LOG_DIR/$1.args" 2>/dev/null; }
 shim_args_have() { grep -Eq -- "$2" "$SHIM_LOG_DIR/$1.args" 2>/dev/null; }
 # before <ts_a> <ts_b> -- both non-empty and a <= b
