@@ -1,4 +1,20 @@
 ## 2026-09-19
+* **Update**: Updated concept `project/eval-authoring-lessons.md`.
+* **Update**: Linked `project/eval-authoring-lessons.md` to `project/pixi-gate-quirks.md` (The pixi task shell quirk that corrupted the skill sync.).
+* **Update**: Linked `project/pixi-gate-quirks.md` to `project/skill-evals.md` (The evals this knowledge came from.).
+* **Update**: Linked `project/skill-evals.md` to `project/pixi-gate-quirks.md` (What building the skill evals taught about this tool or practice.).
+* **Creation**: Documented concept `project/pixi-gate-quirks.md` (Pixi Task and Verify Gate Quirks).
+* **Update**: Linked `project/eval-authoring-lessons.md` to `project/skill-evals.md` (The evals this knowledge came from.).
+* **Update**: Linked `project/skill-evals.md` to `project/eval-authoring-lessons.md` (What building the skill evals taught about this tool or practice.).
+* **Update**: Linked `project/inspect-conventions.md` to `project/skill-evals.md` (The evals this knowledge came from.).
+* **Update**: Linked `project/skill-evals.md` to `project/inspect-conventions.md` (What building the skill evals taught about this tool or practice.).
+* **Update**: Linked `project/harbor-conventions.md` to `project/skill-evals.md` (The evals this knowledge came from.).
+* **Update**: Linked `project/skill-evals.md` to `project/harbor-conventions.md` (What building the skill evals taught about this tool or practice.).
+* **Update**: Updated concept `project/skill-evals.md`.
+* **Update**: Updated concept `project/current-state.md`.
+* **Creation**: Documented concept `project/eval-authoring-lessons.md` (Lessons for Writing Verifiers and Sample Rules).
+* **Creation**: Documented concept `project/inspect-conventions.md` (Inspect Conventions for Skill Samples).
+* **Creation**: Documented concept `project/harbor-conventions.md` (Harbor Conventions for Skill Tasks).
 * **Update**: Updated concept `project/skill-evals.md`.
 * **Update**: Linked `project/skill-evals-plan.md` to `project/skill-evals.md` (The design and decision log this plan implements.).
 * **Update**: Linked `project/skill-evals.md` to `project/skill-evals-plan.md` (The plan that implements this design, with the decisions made while planning it.).

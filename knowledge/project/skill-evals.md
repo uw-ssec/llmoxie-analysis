@@ -3,7 +3,7 @@ type: Process
 title: Skill Evaluation with Inspect and Harbor
 description: "Every skill under .agents/skills is evaluated at two levels: Inspect with deterministic must/must-not rules on the verify gate, and Harbor in a Docker sandbox with fake gh/pixi/okf that log every call; the decision log records why."
 tags: [evals, inspect, harbor, skills, pixi, testing]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T05:14:55Z" }
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T05:49:02Z" }
 sources:
   - resource: docs/superpowers/specs/2026-09-18-skill-evals-design.md on branch worktree-inspect-harbor-pixi
   - resource: llmoxie-analysis evals/README.md on branch worktree-inspect-harbor-pixi
@@ -171,9 +171,15 @@ The gateway is a LiteLLM proxy; credentials live in a gitignored `.env`
 
 ## Status
 
-Implemented on branch `worktree-inspect-harbor-pixi` and exercised against the
-LLMaven gateway on 2026-09-19 (see the section above). Pending merge to `main`;
-`evals/` on `main` is still empty until then.
+Merged to `main` in PR #42 (squash commit a164c9d, 2026-09-19) after CI ran the
+Inspect smoke and the full 18-task Harbor matrix on a GitHub runner. What the
+build taught about the tools is in [[project/harbor-conventions]],
+[[project/inspect-conventions]], [[project/eval-authoring-lessons]] and
+[[project/pixi-gate-quirks]].
 
 # Related Concepts
 - [Skill Evals Implementation Plan](skill-evals-plan.md): The plan that implements this design, with the decisions made while planning it.
+- [Harbor Conventions for Skill Tasks](harbor-conventions.md): What building the skill evals taught about this tool or practice.
+- [Inspect Conventions for Skill Samples](inspect-conventions.md): What building the skill evals taught about this tool or practice.
+- [Lessons for Writing Verifiers and Sample Rules](eval-authoring-lessons.md): What building the skill evals taught about this tool or practice.
+- [Pixi Task and Verify Gate Quirks](pixi-gate-quirks.md): What building the skill evals taught about this tool or practice.
