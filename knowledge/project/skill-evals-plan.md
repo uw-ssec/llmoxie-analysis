@@ -3,7 +3,7 @@ type: Process
 title: Skill Evals Implementation Plan
 description: "The eleven-task order that builds the skill evals, the decisions made while planning them, the constraints an executor must keep, and where execution stands."
 tags: [evals, plan, inspect, harbor, skills, sdd]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T03:42:37Z" }
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T04:41:42Z" }
 sources:
   - resource: docs/superpowers/plans/2026-09-18-skill-evals.md on branch worktree-inspect-harbor-pixi
   - resource: docs/superpowers/specs/2026-09-18-skill-evals-design.md on branch worktree-inspect-harbor-pixi
@@ -68,16 +68,7 @@ the orchestrator through the `commit` skill after the task review passes.
 
 ## Status
 
-Task 1 complete on 2026-09-18. Remaining tasks are dispatched in order; the
-session ledger is `.superpowers/sdd/2026-09-18-skill-evals/progress.md` in
-the worktree (gitignored, so it does not survive the branch).
-
-## Related Concepts
-
-- [Skill Evaluation with Inspect and Harbor](skill-evals.md): The design this
-  plan implements and its decision log.
-- [What Exists and What Is Only Designed](current-state.md): The status page
-  to flip once `evals/` lands on `main`.
+All eleven tasks executed on 2026-09-18 and 2026-09-19 with subagent-driven development; the branch is awaiting review and merge. The final whole-branch review's fixes landed in the same branch.
 
 # Related Concepts
 - [Skill Evaluation with Inspect and Harbor](skill-evals.md): The design and decision log this plan implements.

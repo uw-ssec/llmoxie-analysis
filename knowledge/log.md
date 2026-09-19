@@ -1,6 +1,10 @@
 ## 2026-09-19
 * **Update**: Linked `project/skill-evals-plan.md` to `project/skill-evals.md` (The design and decision log this plan implements.).
 * **Update**: Linked `project/skill-evals.md` to `project/skill-evals-plan.md` (The plan that implements this design, with the decisions made while planning it.).
+* **Update**: Updated concept `project/skill-evals-plan.md`.
+* **Update**: Updated concept `project/skill-evals.md`.
+* **Update**: Linked `project/skill-evals-plan.md` to `project/skill-evals.md` (The design and decision log this plan implements.).
+* **Update**: Linked `project/skill-evals.md` to `project/skill-evals-plan.md` (The plan that implements this design, with the decisions made while planning it.).
 * **Creation**: Documented concept `project/skill-evals-plan.md` (Skill Evals Implementation Plan).
 * **Update**: Updated concept `project/skill-evals.md`.
 

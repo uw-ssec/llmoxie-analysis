@@ -3,7 +3,7 @@ type: Process
 title: Skill Evaluation with Inspect and Harbor
 description: "Every skill under .agents/skills is evaluated at two levels: Inspect with deterministic must/must-not rules on the verify gate, and Harbor in a Docker sandbox with fake gh/pixi/okf that log every call; the decision log records why."
 tags: [evals, inspect, harbor, skills, pixi, testing]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T03:42:37Z" }
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T04:41:42Z" }
 sources:
   - resource: docs/superpowers/specs/2026-09-18-skill-evals-design.md on branch worktree-inspect-harbor-pixi
   - resource: llmoxie-analysis evals/README.md on branch worktree-inspect-harbor-pixi
@@ -144,18 +144,7 @@ reason an agent may be unable to run the agent-level half locally.
 
 ## Status
 
-Design spec and implementation plan are committed on branch
-`worktree-inspect-harbor-pixi`, rebased onto `main` at `6aa92fa` on
-2026-09-18. Implementation is in progress task by task; see
-[[project/skill-evals-plan]] for the order. `evals/` on `main` is still an
-empty directory.
-
-## Related Concepts
-
-- [What Exists and What Is Only Designed](current-state.md): Where this sits
-  relative to the rest of the unbuilt work.
-- [Epic #1 and the Implementation Issues](epic-and-issues.md): The issue-by-issue
-  plan this prototype is not yet part of.
+Implemented on branch `worktree-inspect-harbor-pixi` on 2026-09-19: all twelve skills have Inspect samples and Harbor tasks, the Inspect smoke runs inside `pixi run verify`, and the Harbor matrix scored 18 of 18 under the oracle. Pending merge to `main`; `evals/` on `main` is still empty until then.
 
 # Related Concepts
 - [Skill Evals Implementation Plan](skill-evals-plan.md): The plan that implements this design, with the decisions made while planning it.
