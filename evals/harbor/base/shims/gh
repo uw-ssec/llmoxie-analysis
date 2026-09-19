@@ -1,0 +1,29 @@
+#!/bin/bash
+# Fake GitHub CLI for skill evals. Records every call; answers from /fixture/gh.
+set -uo pipefail
+. "${SKILL_SHIM_LIB:-/usr/local/lib/skill-evals/shimlib.sh}"
+shim_record gh "$@"
+
+case "${1:-} ${2:-}" in
+  "issue create")
+    echo "https://github.com/example/llmoxie-analysis/issues/42" ;;
+  "pr create")
+    echo "https://github.com/example/llmoxie-analysis/pull/7" ;;
+  "pr view")
+    [ -f "$SHIM_FIXTURE_DIR/gh/pr.json" ] && cat "$SHIM_FIXTURE_DIR/gh/pr.json" ;;
+  "pr list")
+    [ -f "$SHIM_FIXTURE_DIR/gh/merged.txt" ] && cat "$SHIM_FIXTURE_DIR/gh/merged.txt" ;;
+  "pr merge")
+    # Simulate the squash merge landing: fast-forward remote main to the PR
+    # head, then delete the head branch on the remote (as --delete-branch does).
+    head="$(sed -n 's/.*"headRefName": *"\([^"]*\)".*/\1/p' "$SHIM_FIXTURE_DIR/gh/pr.json" 2>/dev/null | head -1)"
+    if [ -n "$head" ] && [ -d "$SHIM_REMOTE" ]; then
+      "$SHIM_GIT" --git-dir="$SHIM_REMOTE" update-ref refs/heads/main "refs/heads/$head"
+      "$SHIM_GIT" --git-dir="$SHIM_REMOTE" branch -D "$head" >/dev/null 2>&1
+    fi
+    echo "✓ Squashed and merged pull request #7" ;;
+  "release create")
+    echo "https://github.com/example/llmoxie-analysis/releases/tag/${3:-}" ;;
+  *) ;;
+esac
+exit 0

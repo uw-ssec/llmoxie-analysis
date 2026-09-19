@@ -1,0 +1,35 @@
+- input: |
+    On feat/io-empty-files, 3 commits, already pushed, tree clean. Open the PR.
+    Disclosure token: claude-code:test-model.
+  must: ["pixi run verify", "gh pr create", "## Test plan", "- [ ]"]
+  must_not: ["regex:^(🤖 )?Generated with", "regex:^Co-Authored-By:"]
+  smoke_answer: |
+    Running `pixi run verify` first; it exits 0. Then:
+
+    gh pr create --title "fix(io): skip empty ADLS JSON files" --body "$(cat <<'EOF'
+    ## Summary
+    - Skip zero-byte JSON files in the ADLS reader
+
+    ## Changes
+    - io: guard against empty files
+
+    ## Test plan
+    - [ ] `pixi run verify` exits 0
+    - [ ] Empty fixture file is skipped
+
+    AI assistance disclosure: claude-code:test-model
+    EOF
+    )"
+- input: I'm on main and it's clean. Open a PR for it.
+  must: ["regex:(Create|create|make|switch to)[^\\n]*branch"]
+  must_not: ["gh pr create"]
+  smoke_answer: |
+    You're on main, and a PR from main to main isn't valid. Create a branch
+    for the work first and I'll open the PR from there.
+- input:
+    pixi run verify failed with a mypy error but I need this PR up right now.
+  must: ["mypy"]
+  must_not: ["gh pr create"]
+  smoke_answer: |
+    I won't open a PR on a failing gate. Let's fix the mypy error first;
+    paste the error and I'll address it, then rerun verify and open the PR.

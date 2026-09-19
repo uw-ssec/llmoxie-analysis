@@ -1,0 +1,10 @@
+# Smoke fixture. Each sample: input (user turn), must / must_not (rules on the
+# reply; plain strings are case-insensitive substrings, "regex:" prefixes a
+# case-sensitive multiline regex), smoke_answer (canned reply for mockllm).
+- input: Please give me the greeting file content.
+  must: ["Hello from the greeting-file skill"]
+  must_not: ["regex:greeting\\.md"]
+  smoke_answer: Hello from the greeting-file skill
+- input: I need a greeting file. What should it contain?
+  must: ["Hello from the greeting-file skill"]
+  smoke_answer: Hello from the greeting-file skill
