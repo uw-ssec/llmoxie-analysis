@@ -24,5 +24,6 @@ RUN chmod 755 /usr/local/bin/gh /usr/local/bin/pixi /usr/local/bin/okf /usr/loca
 # Every skill under test, synced from .agents/skills and evals/skills by
 # `pixi run -e evals harbor-sync`. task.toml points skills_dir at /skills.
 COPY skills/ /skills/
+RUN test -f /skills/commit/SKILL.md && test -f /skills/greeting-file/SKILL.md
 
 WORKDIR /app

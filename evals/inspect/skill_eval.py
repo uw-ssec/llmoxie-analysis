@@ -93,6 +93,9 @@ def load_samples(name: str) -> list[Sample]:
     entries: list[dict[str, Any]] = yaml.safe_load(
         (SAMPLES_DIR / f"{name}.yaml").read_text()
     )
+    if not isinstance(entries, list):
+        msg = f"{name}.yaml must be a list of samples"
+        raise ValueError(msg)  # noqa: TRY004  # malformed YAML data, not a bad argument
     body = skill_body(name)
     samples: list[Sample] = []
     for index, entry in enumerate(entries, start=1):
@@ -132,10 +135,19 @@ def rule_matches(text: str, rule: str) -> bool:
     -------
     bool
         True when the rule matches.
+
+    Raises
+    ------
+    ValueError
+        If the rule is a ``regex:`` rule with an invalid pattern.
     """
     if rule.startswith(REGEX_PREFIX):
         pattern = rule[len(REGEX_PREFIX) :]
-        return re.search(pattern, text, re.MULTILINE) is not None
+        try:
+            return re.search(pattern, text, re.MULTILINE) is not None
+        except re.error as exc:
+            msg = f"invalid regex rule {rule!r}: {exc}"
+            raise ValueError(msg) from exc
     return rule.lower() in text.lower()
 
 

@@ -22,7 +22,7 @@
     8. gh release create v0.2.0 --title "v0.2.0" --notes "..." dist/*.whl dist/*.tar.gz
 - input: I'm on feat/thing. Cut a patch release.
   must: ["main"]
-  must_not: ["regex:git tag -a"]
+  must_not: ["regex:^\\s*(\\$ )?git tag -a"]
   smoke_answer: |
     Releases are cut from main only. Merge feat/thing first, switch to main,
     and I'll cut the patch release from there.
