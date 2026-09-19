@@ -48,7 +48,7 @@ jobs:
           pixi-version: v0.81.0
           cache: true
           locked: true
-          activate-environment: true
+          activate-environment: default
           environments: default evals
 
       - name: Pre-warm pre-commit hook environments
