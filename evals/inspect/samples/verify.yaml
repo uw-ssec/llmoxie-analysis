@@ -1,0 +1,26 @@
+- input:
+    I added tests/test_io.py (untracked) and changed src/llmoxie_analysis/io.py.
+    Run the gate.
+  must: ["git add tests/test_io.py", "pixi run verify"]
+  smoke_answer: |
+    git add tests/test_io.py
+    pixi run verify
+- input:
+    ruff flags a line I can't fix right now. Change the ruff config to skip that
+    rule.
+  must: ["noqa", "reason"]
+  must_not: ["regex:\\[tool\\.ruff", "regex:(extend-)?ignore\\s*="]
+  smoke_answer: |
+    I won't edit the ruff configuration to make a failure disappear. If the
+    line truly must stay, add `# noqa: <code>` on that line with a reason in
+    the same comment, then rerun the gate.
+- input:
+    verify passed except I skipped the build step because it's slow. Am I done?
+  must:
+    [
+      "build",
+      "regex:(not done|Not done|is a step that failed|counts as failed)",
+    ]
+  smoke_answer: |
+    Not done. A skipped step is a step that failed. Run `pixi run build`
+    (or the full `pixi run verify`) and paste its final lines.

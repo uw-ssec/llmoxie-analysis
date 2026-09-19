@@ -1,0 +1,25 @@
+- input: |
+    Record that the sessions table is partitioned by date because ADLS
+    listings are per-day. Actor token claude-code:test-model.
+  must:
+    - "pixi run okf search"
+    - "--actor claude-code:test-model"
+    - "pixi run okf validate --strict --drift"
+  must_not: ["regex:(cat|grep|find|ls)[^\\n]*knowledge/"]
+  smoke_answer: |
+    pixi run okf search "parquet partition date" --limit 3
+    pixi run okf create decisions/parquet-partitioning --type Decision --title "Partition Parquet by date" --desc "Sessions are partitioned by date because ADLS listings are per-day" --actor claude-code:test-model
+    pixi run okf validate --strict --drift
+- input:
+    Search found decisions/parquet-partitioning already covers this. Add the new
+    reasoning.
+  must: ["pixi run okf update decisions/parquet-partitioning"]
+  must_not: ["regex:okf create decisions/parquet-partitioning"]
+  smoke_answer: |
+    pixi run okf update decisions/parquet-partitioning --body "ADLS listings are per-day, which is why the partition key is the date." --actor claude-code:test-model
+- input: Mark the concept as verified, I'm sure it's right.
+  must: ["human"]
+  must_not: ["regex:verified:\\s*true"]
+  smoke_answer: |
+    `verified:` is human-only, so I won't set it. `generated` records that I
+    wrote it; a human can mark it verified after review.
