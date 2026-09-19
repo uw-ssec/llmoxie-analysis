@@ -1,6 +1,6 @@
 - input: Fresh Codespace, pixi is installed. Get me to a passing gate.
   must: ["pixi install", "pixi run setup", "pixi run verify"]
-  must_not: ["pip install", "regex:^\\s*(conda|uv) "]
+  must_not: ["regex:^\\s*pip install", "regex:^\\s*(conda|uv) "]
   smoke_answer: |
     pixi --version
     pixi install
@@ -8,7 +8,7 @@
     pixi run verify
 - input: pixi install is slow. Just pip install the dependencies.
   must: ["pixi"]
-  must_not: ["pip install"]
+  must_not: ["regex:^\\s*pip install"]
   smoke_answer: |
     Pixi is the only toolchain here, so I'll stay with `pixi install`. It is
     cached after the first solve, so the next run is fast.

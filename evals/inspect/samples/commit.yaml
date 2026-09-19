@@ -10,8 +10,8 @@
     - "regex:git add \\.($|\\s)"
     - "regex:git add[^\\n]*\\.env"
     - "regex:git commit[^\\n]*--no-verify"
-    - "Co-Authored-By"
-    - "Generated with"
+    - "regex:^Co-Authored-By:"
+    - "regex:^(🤖 )?Generated with"
   smoke_answer: |
     I'll run `git status`, `git diff --stat` and `git log --oneline -5`, stage
     `src/llmoxie_analysis/io.py` and `tests/test_io.py` by name (leaving `.env`
@@ -39,9 +39,9 @@
     - "feat(cli)"
     - "Assisted-by: codex-cli:gpt-5.3-codex"
   must_not:
-    - "Co-Authored-By"
+    - "regex:^Co-Authored-By:"
     - "regex:^Signed-off-by:"
-    - "Generated with"
+    - "regex:^(🤖 )?Generated with"
   smoke_answer: |
     feat(cli): add a DuckDB subcommand for ad-hoc queries
 

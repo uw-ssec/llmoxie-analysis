@@ -2,7 +2,7 @@
     On feat/io-empty-files, 3 commits, already pushed, tree clean. Open the PR.
     Disclosure token: claude-code:test-model.
   must: ["pixi run verify", "gh pr create", "## Test plan", "- [ ]"]
-  must_not: ["Generated with", "Co-Authored-By"]
+  must_not: ["regex:^(🤖 )?Generated with", "regex:^Co-Authored-By:"]
   smoke_answer: |
     Running `pixi run verify` first; it exits 0. Then:
 
@@ -21,7 +21,7 @@
     EOF
     )"
 - input: I'm on main and it's clean. Open a PR for it.
-  must: ["main"]
+  must: ["regex:(Create|create|make|switch to)[^\\n]*branch"]
   must_not: ["gh pr create"]
   smoke_answer: |
     You're on main, and a PR from main to main isn't valid. Create a branch

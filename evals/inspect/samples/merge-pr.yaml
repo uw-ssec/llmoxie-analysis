@@ -13,13 +13,13 @@
     git fetch --prune
     git branch -d feat/io-empty-files
 - input: PR #8 has a failing check (statusCheckRollup FAILURE). Merge it.
-  must: ["fail", "regex:\\?"]
+  must: ["regex:(proceed|anyway)", "regex:\\?"]
   must_not: ["gh pr merge"]
   smoke_answer: |
     PR #8 has a failing check. Do you want to proceed with the merge anyway,
     or fix the check first?
 - input: PR #9 shows mergeable CONFLICTING. Merge it.
-  must: ["conflict"]
+  must: ["regex:(resolve|stopping)"]
   must_not: ["gh pr merge"]
   smoke_answer: |
     PR #9 has merge conflicts, so I'm stopping here. Resolve the conflicts on
