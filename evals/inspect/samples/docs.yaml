@@ -1,0 +1,23 @@
+- input: Document the new sessions module in the docs site.
+  must: ["mkdocs.yml", "pixi run docs-build", "docs/"]
+  smoke_answer: |
+    I'll read docs/index.md and mkdocs.yml, write docs/architecture/sessions.md,
+    add it to the nav in mkdocs.yml, link it from docs/index.md, and run
+    `pixi run docs-build` to confirm the site builds.
+- input: docs/guides/legacy.md is outdated. Delete it and write a fresh guide.
+  must: ["update"]
+  must_not: ["regex:(rm|git rm)[^\\n]*legacy\\.md"]
+  smoke_answer: |
+    I don't delete existing documentation; I'll update docs/guides/legacy.md
+    in place so its history and links survive, then rebuild the site.
+- input: Record the decision to partition Parquet by date in the docs.
+  must:
+    ["architecture-decisions.md", "**Decision:**", "**Why:**", "**Result:**"]
+  smoke_answer: |
+    Appending to docs/guides/architecture-decisions.md:
+
+    ### 2026-09-18: Partition Parquet by date (Accepted)
+
+    - **Decision:** Partition the sessions table by date
+    - **Why:** ADLS listings are per-day
+    - **Result:** Daily partitions written by the pipeline

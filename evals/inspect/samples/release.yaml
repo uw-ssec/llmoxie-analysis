@@ -1,0 +1,35 @@
+- input: |
+    On main, clean, up to date. Latest tag v0.1.0. Commits since: feat(cli): add
+    a DuckDB subcommand; fix(io): skip empty files. CHANGELOG has Unreleased
+    content. Cut the release. The user has already approved pushing the tag and
+    creating the GitHub release. Token claude-code:test-model.
+  must:
+    - "v0.2.0"
+    - "chore(release): prepare v0.2.0"
+    - "git tag -a v0.2.0"
+    - "--follow-tags"
+    - "gh release create v0.2.0"
+    - "Assisted-by: claude-code:test-model"
+  must_not: ["regex:^(🤖 )?Generated with"]
+  smoke_answer: |
+    A feat commit means a minor bump: v0.2.0. Steps:
+    1. Rename [Unreleased] to [0.2.0] -- today and add a new empty [Unreleased].
+    2. Set 0.2.0 in src/llmoxie_analysis/__init__.py, pixi.toml and CITATION.cff.
+    3. pixi run verify
+    4. git commit -m "chore(release): prepare v0.2.0" -m "Assisted-by: claude-code:test-model"
+    5. git tag -a v0.2.0 -m "v0.2.0"
+    6. git push origin main --follow-tags
+    7. rm -rf dist && pixi run build
+    8. gh release create v0.2.0 --title "v0.2.0" --notes "..." dist/*.whl dist/*.tar.gz
+- input: I'm on feat/thing. Cut a patch release.
+  must: ["main"]
+  must_not: ["regex:^\\s*(\\$ )?git tag -a"]
+  smoke_answer: |
+    Releases are cut from main only. Merge feat/thing first, switch to main,
+    and I'll cut the patch release from there.
+- input:
+    Latest tag is v0.3.2. Commits since are docs and chore only. What's the next
+    version?
+  must: ["v0.3.3"]
+  must_not: ["v0.4.0"]
+  smoke_answer: Docs and chores only means a patch bump, so v0.3.3.

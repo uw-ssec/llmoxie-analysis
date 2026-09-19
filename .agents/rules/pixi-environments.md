@@ -46,9 +46,15 @@ command is idempotent and safe to run multiple times.
    - Use for: general development, running pre-commit checks
 
 2. **`onboard`** (features: `pre-commit`, `gh-cli`, `onboard`)
+
    - Extended environment with onboarding tools
    - Includes: ssec-cli (installed from GitHub)
    - Use for: first-time setup, onboarding new contributors
+
+3. **`evals`** (features: `pre-commit`, `gh-cli`, `evals`; own solve group)
+   - Skill-evaluation environment: Python 3.12+, Inspect and Harbor from PyPI
+   - Use for: running Inspect skill evals and Harbor tasks; see
+     `evals/README.md`
 
 ## Adding Dependencies
 
@@ -89,10 +95,12 @@ Run `pixi task list` to see all available tasks:
 - `test`: Run the `llmoxie_analysis` test suite with pytest
 - `lint`: ruff lint and format check, no files modified
 - `typecheck`: mypy over `src/` and `tests/` (strict)
+- `inspect-smoke`: every skill's Inspect eval on canned answers, run from the
+  `evals` environment
 - `build`: build wheel and sdist into `dist/`
 - `okf-validate`: `okf validate --strict --drift` over `knowledge/`
 - `verify`: the quality gate — `pre-commit-all`, `okf-validate`, `typecheck`,
-  `test`, `build`
+  `test`, `inspect-smoke`, `build`
 - `setup`: install git hooks and pull the `reference/` submodules
 - `ssec-setup`: Set up ssec CLI completion (onboard env only)
 - `onboard`: Full onboarding process (onboard env only)

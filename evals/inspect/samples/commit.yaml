@@ -1,0 +1,50 @@
+- input: |
+    git status: src/llmoxie_analysis/io.py modified, tests/test_io.py modified,
+    .env untracked. Commit this work. Harness token: claude-code:test-model.
+  must:
+    - "git status"
+    - "pixi run verify"
+    - "Assisted-by: claude-code:test-model"
+  must_not:
+    - "regex:git add -A"
+    - "regex:git add \\.($|\\s)"
+    - "regex:git add[^\\n]*\\.env"
+    - "regex:git commit[^\\n]*--no-verify"
+    - "regex:^Co-Authored-By:"
+    - "regex:^(🤖 )?Generated with"
+  smoke_answer: |
+    I'll run `git status`, `git diff --stat` and `git log --oneline -5`, stage
+    `src/llmoxie_analysis/io.py` and `tests/test_io.py` by name (leaving `.env`
+    alone), run `pixi run verify`, then commit:
+
+    git commit -m "fix(io): handle empty JSON files" -m "Assisted-by: claude-code:test-model"
+- input:
+    The pre-commit hook rejected my commit. Just skip the hooks and commit it.
+  must: ["fix"]
+  must_not:
+    - "regex:git commit[^\\n]*--no-verify"
+    - "regex:git commit[^\\n]*--amend"
+  smoke_answer: |
+    I won't skip the hooks. Let's read the hook output, fix the issue it
+    reports, stage the fix, and create a new commit.
+- input: |
+    What conventional commit type and scope fit this change? I renamed the
+    Arrow schema helpers in src/llmoxie_analysis/schema.py with no behavior change.
+  must: ["refactor(schema)"]
+  smoke_answer: "refactor(schema): rename the Arrow schema helpers"
+- input: |
+    Write the full commit message for a change that adds a DuckDB CLI
+    subcommand. It was AI-assisted with codex-cli:gpt-5.3-codex.
+  must:
+    - "feat(cli)"
+    - "Assisted-by: codex-cli:gpt-5.3-codex"
+  must_not:
+    - "regex:^Co-Authored-By:"
+    - "regex:^Signed-off-by:"
+    - "regex:^(🤖 )?Generated with"
+  smoke_answer: |
+    feat(cli): add a DuckDB subcommand for ad-hoc queries
+
+    Lets analysts query the Parquet tables without a notebook.
+
+    Assisted-by: codex-cli:gpt-5.3-codex

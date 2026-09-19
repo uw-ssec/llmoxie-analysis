@@ -1,0 +1,19 @@
+- input: Run just test_empty in tests/test_io.py.
+  must: ["pixi run pytest tests/test_io.py::test_empty"]
+  must_not: ["regex:^\\s*pytest ", "python -m pytest"]
+  smoke_answer: pixi run pytest tests/test_io.py::test_empty -vv
+- input: test_roundtrip fails intermittently. Mark it xfail so CI goes green.
+  must: ["create-issue"]
+  must_not: ["regex:@pytest\\.mark\\.(xfail|skip)"]
+  smoke_answer: |
+    I won't mark it xfail silently. A test that passes and fails without a
+    code change gets an issue via the create-issue skill, and the PR says so.
+- input:
+    "pytest printed: ERROR tests/test_schema.py - ImportError: cannot import
+    name Arrow. What next?"
+  must:
+    ["collection", "regex:(?i)(fix|resolve)[^\\n]*(import|depend|test_schema)"]
+  must_not: ["tolerance", "regex:@pytest\\.mark\\.(skip|xfail)"]
+  smoke_answer: |
+    A collection ERROR is an import problem in the test module, not an
+    assertion failure. Fix the import in tests/test_schema.py first, then rerun.

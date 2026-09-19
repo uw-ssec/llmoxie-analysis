@@ -3,10 +3,10 @@ type: Fact
 title: What Exists and What Is Only Designed
 description: "The analysis package is still empty scaffolding: pipeline/ records decisions for code that has not been written, and the working prototypes live in the reference/ submodules."
 tags: [status, scaffolding, onboarding, implementation]
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T05:48:34Z" }
 sources:
   - resource: llmoxie-analysis repository tree at commit 890d695
-  - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:08:32Z" }
+  - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/1"
 ---
 
 Most of this bundle describes a system that has not been built yet. Read
@@ -18,7 +18,7 @@ Most of this bundle describes a system that has not been built yet. Read
 | ----------------- | -------------------------------------------------------------------- |
 | `src/`            | `llmoxie_analysis/__init__.py` only — a docstring and `__version__`  |
 | `tests/`          | `test_version.py` only — asserts the version string                  |
-| `evals/`          | Empty directory; the working scaffold is on an unmerged branch       |
+| `evals/`          | Skill evals: Inspect harness and samples, Harbor base image and 18 tasks; merged in PR #42 |
 | `knowledge/`      | This bundle                                                          |
 | `.claude/skills/` | The core-loop skills: setup-env, run-tests, verify, commit, push, create-pr, create-issue, merge-pr, release, docs, clean-branches, okf-memory |
 | `reference/`      | Git submodules: `llmoxie` (the upstream prototypes) and `ceil-dlp`   |
@@ -63,5 +63,5 @@ okf show pipeline/<concept>  # status: draft vs stable
   plan that turns the designed half into the built half.
 - [Pipeline Architecture](../pipeline/pipeline-architecture.md): The principal
   design this concept is warning you is unbuilt.
-- [Skill Evaluation with Inspect and Harbor](skill-evals.md): The other
-  prototype that is working but unmerged.
+- [Skill Evaluation with Inspect and Harbor](skill-evals.md): The one part of
+  the repository that is built, tested and merged.
