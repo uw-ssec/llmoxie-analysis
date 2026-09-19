@@ -1,3 +1,12 @@
+## 2026-09-19
+* **Update**: Linked `platform/litellm-spend-logs.md` to `upstream/session-reconstruction.md` (A single `.jsonl` export, as `dbexport.sh` produces, selects that module's streaming code path instead of the DataFrame path a zip takes.).
+* **Update**: Linked `caveats/end-user-parsing.md` to `datasets/jan-mar-2026-findings.md` (Its count of 13,221 distinct native `session_id` values across 13,291 records is why upstream's fallback to that column inflates session counts.).
+* **Update**: Updated concept `datasets/jan-mar-2026-findings.md`.
+* **Update**: Updated concept `platform/litellm-spend-logs.md`.
+* **Update**: Updated concept `upstream/session-reconstruction.md`.
+* **Update**: Updated concept `caveats/end-user-parsing.md`.
+* **Update**: Updated concept `upstream/reader-flattening.md`.
+
 ## 2026-09-18
 * **Update**: Linked `project/knowledge-bundle.md` to `project/docs-pipeline.md` (What the separated docs site is: hand-written Markdown under docs/, with no copy of this bundle's content.).
 * **Update**: Linked `project/docs-pipeline.md` to `project/knowledge-bundle.md` (Why the bundle sits at the repository root and stays separate from the site.).
