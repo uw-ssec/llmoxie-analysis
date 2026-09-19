@@ -3,10 +3,10 @@ type: Fact
 title: What Profiling the Jan–Mar 2026 Extract Proved
 description: "Structure-only profiling confirmed four documented caveats with real numbers, and surfaced three new ones — an unreliable cache flag, a useless native session_id, and an 11% failure rate that must be filtered before any metric."
 tags: [findings, data-quality, caveats, validation, early-2026]
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T00:10:18Z" }
 sources:
   - resource: structure-only profile of the Jan-Mar 2026 extract
-  - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
+  - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/1"
 ---
 
 Until now every caveat in this bundle was derived from reading upstream code and
@@ -98,6 +98,10 @@ That is effectively one session per request. The column identifies a request's
 own trace, not a conversation. [[upstream/session-reconstruction]] must still
 derive sessions from the parsed `end_user` string, and the 26.4% coverage gap
 above cannot be closed by falling back to this column.
+
+Upstream commit `3e9a694` (2026-09-18) nevertheless added exactly that fallback.
+The counts here are why it inflates the session count rather than repairing it;
+see [[caveats/end-user-parsing]].
 
 ## New: 11% of requests failed, and they poison every average
 

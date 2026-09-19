@@ -1,15 +1,17 @@
 ---
 type: Fact
 title: LiteLLM Spend Logs and infra extract
-description: "The PostgreSQL-backed spend-log path, the REST endpoint that reads it, and the llmaven infra extract command that packages a date range into a zip."
+description: "The PostgreSQL-backed spend-log path, the REST endpoint and the database-backup export that read it, and the llmaven infra extract command that packages a date range into a zip."
 tags: [litellm, postgres, spend-logs, extract, cli]
-code_refs:
-  - reference/llmoxie/src/llmaven/data/README.md
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T00:11:08Z" }
+code_refs: [reference/llmoxie/src/llmaven/data/README.md, reference/llmoxie/src/llmaven/cli.py, reference/llmoxie/scripts/dbexport.sh]
 sources:
-  - resource: reference/llmoxie commit 527d163, PR #79, 2026-02-16
-  - resource: reference/llmoxie commit 39901b9, PR #100, 2026-03-17
+  - resource: "reference/llmoxie commit 527d163, PR #79, 2026-02-16"
+  - resource: "reference/llmoxie commit 39901b9, PR #100, 2026-03-17"
+  - resource: "reference/llmoxie commit 3e9a694, PR #167, 2026-09-18"
+  - resource: reference/llmoxie/scripts/dbexport.sh (182 lines)
+  - resource: reference/llmoxie/tests/infrastructure/test_cli_extract.py
   - resource: reference/llmoxie/src/llmaven/data/README.md
-generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 ---
 
 LiteLLM tracks per-request spend natively in PostgreSQL. This is the second of
@@ -27,6 +29,60 @@ analysis tooling to a schema LiteLLM is free to migrate.
 
 A later change (commit `39901b9`, PR #100, 2026-03-17) extended the same command
 to also fetch MLflow traces.
+
+### The extract no longer fails on a bad day
+
+Commit `3e9a694` (PR #167, 2026-09-18) is titled "Support pagination in data
+download", but the request loop is still one `GET /spend/logs` per day with
+`start_date`, `end_date`, and `summarize=false`; no paging parameter was added.
+What changed is the error handling, from fail-fast to skip-and-continue:
+
+- An HTTP error with a status of 500 or above prints a message and sleeps 60
+  seconds. The day is **not re-requested** — the code comment says "before
+  retrying", but execution carries on with the failed response. Any other HTTP
+  error still aborts the extract.
+- A body that is not valid JSON, or is not a list, used to abort with exit
+  code 1. It now prints `skipping` for that day and continues, and the command
+  exits 0.
+- A day with no records is no longer written into the zip. Previously every
+  day in the range had a member, empty or not.
+
+!!! warning "A missing day in the zip is now ambiguous"
+
+    A day can be absent because the gateway had no traffic or because the
+    request for it failed. The zip does not distinguish the two and the exit
+    code is 0 either way; only the command's console output does. An extract
+    made at or after `3e9a694` needs its day coverage checked against the
+    requested range before anything is computed from it.
+
+This is read from the code and the updated upstream tests
+(`test_http_error_skips_day_and_continues` and siblings), not from running an
+extract.
+
+## A second way to read it: straight from a database backup
+
+The same commit adds `scripts/dbexport.sh`, which bypasses the REST endpoint. It
+downloads the latest `pg_dump` backup from Azure Blob (`az://pg-backups/llmaven`,
+database `litellm_db`, or a local file via `--dump`), restores only
+`LiteLLM_SpendLogs` into a throwaway `postgres:17` Docker container, and writes
+`COPY (SELECT row_to_json(t) …)` output to a single JSONL file (default
+`spend_logs.jsonl`) that it describes as "compatible with reader.py". It needs
+`az`, `docker`, `pg_restore`, and `psql` on the path.
+
+This partly reverses the PR #79 decision above: the export is coupled to
+LiteLLM's table schema and to the backup job's blob layout, in exchange for one
+bulk read instead of one HTTP request per day.
+
+Two quirks come with it. `row_to_json()` mis-escapes backslash-quote pairs inside
+JSONB text, so the script pipes every line through a sanitizer that repairs what
+it can and **skips, with a warning on stderr, any row it cannot parse**. And the
+`end_user` value arrives with literal `\"` sequences, which is why
+`_parse_end_user` gained a second `json.loads` attempt — see
+[[upstream/reader-flattening]].
+
+Because the output is one `.jsonl` file, feeding it to `group_sessions` selects
+that module's streaming code path rather than the DataFrame path a zip takes;
+see [[upstream/session-reconstruction]].
 
 ### Credentials
 
@@ -91,3 +147,6 @@ why that is necessarily true.
 - [The llmaven data pipeline run CLI](../pipeline/pipeline-cli.md):
   `llmaven infra extract` produces the zip that the CLI feeds to the pipeline in
   LiteLLM mode.
+- [group_sessions.py — Reconstructing Conversations](../upstream/session-reconstruction.md):
+  A single `.jsonl` export, as `dbexport.sh` produces, selects that module's
+  streaming code path instead of the DataFrame path a zip takes.
