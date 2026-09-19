@@ -1,4 +1,11 @@
 ## 2026-09-19
+* **Update**: Linked `platform/litellm-spend-logs.md` to `upstream/session-reconstruction.md` (A single `.jsonl` export, as `dbexport.sh` produces, selects that module's streaming code path instead of the DataFrame path a zip takes.).
+* **Update**: Linked `caveats/end-user-parsing.md` to `datasets/jan-mar-2026-findings.md` (Its count of 13,221 distinct native `session_id` values across 13,291 records is why upstream's fallback to that column inflates session counts.).
+* **Update**: Updated concept `datasets/jan-mar-2026-findings.md`.
+* **Update**: Updated concept `platform/litellm-spend-logs.md`.
+* **Update**: Updated concept `upstream/session-reconstruction.md`.
+* **Update**: Updated concept `caveats/end-user-parsing.md`.
+* **Update**: Updated concept `upstream/reader-flattening.md`.
 * **Update**: Updated concept `project/eval-authoring-lessons.md`.
 * **Update**: Linked `project/eval-authoring-lessons.md` to `project/pixi-gate-quirks.md` (The pixi task shell quirk that corrupted the skill sync.).
 * **Update**: Linked `project/pixi-gate-quirks.md` to `project/skill-evals.md` (The evals this knowledge came from.).
