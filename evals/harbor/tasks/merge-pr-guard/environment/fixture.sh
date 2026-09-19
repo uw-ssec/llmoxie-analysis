@@ -28,4 +28,6 @@ cat > /fixture/gh/pr.json <<'EOF'
   "statusCheckRollup": [{"name": "verify", "conclusion": "FAILURE"}]
 }
 EOF
+$G -C "$REPO" rev-parse refs/heads/main > /fixture/local-main-sha
+$G --git-dir="$REMOTE" rev-parse refs/heads/main > /fixture/remote-main-sha
 finish_fixture

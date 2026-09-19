@@ -10,5 +10,6 @@ echo "$title" | grep -Eq '^(feat|fix|refactor|docs|chore|perf|ci|build|test)\([a
 require shim_args_have gh '^## Test plan'
 require shim_args_have gh '^- \[ \]'
 shim_args_have gh 'Generated with' && fail "marketing line in the PR body"
+shim_args_have gh 'claude-code:test-model' || shim_args_have gh 'ai-assisted' || fail "no AI assistance disclosure (token in the body or an ai-assisted label)"
 require remote_branch_exists feat/io-empty-files
 pass "PR opened after a green gate"
