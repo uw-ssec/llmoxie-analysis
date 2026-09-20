@@ -3,11 +3,11 @@ type: Process
 title: "Epic #1 and the Implementation Issues"
 description: "How epic issue #1 decomposes into twelve sub-issues, which concept each one implements, and the dependency order that determines what can be worked on in parallel."
 tags: [issues, planning, dependencies, epic, process]
+generated: { by: "opencode:qwen3.8-27b-oq4e-mtp", at: "2026-09-20T06:06:47Z" }
 sources:
-  - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
-  - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/2
-  - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/13
-generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
+  - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/1"
+  - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/2"
+  - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/13"
 ---
 
 [Issue #1](https://github.com/uw-ssec/llmoxie-analysis/issues/1) is the epic. It
@@ -15,7 +15,7 @@ specifies the four-stage pipeline, the `--source` modes, the always-overwrite
 rule, the output path convention, the two-engine query layer, and the two-layer
 idempotency design. Issues #2–#13 break that into units of work.
 
-All twelve sub-issues are currently **open** and labelled `enhancement`.
+Sub-issue #2 is **done** (PR uw-ssec/llmoxie#151 merged 2026-09-12, ticket closed 2026-09-20); the remaining eleven are open and labelled `enhancement`.
 
 ## The breakdown
 
@@ -53,12 +53,14 @@ graph TD
     I8 --> I13
 ```
 
-**#2 is the real prerequisite.** `group_sessions.py` is an upstream prototype,
-not yet a merged, tested module in this repository. Both the adapters (#3) and
-the transform (#5) build directly on the session objects it produces, and the
-caveats recorded in [[caveats/dedup-vs-last-request]] and
-[[caveats/responses-api-gap]] were discovered inside it. Merging it first means
-those behaviors are fixed in one place rather than reproduced in two.
+**#2 is the real prerequisite — and it is done.** PR uw-ssec/llmoxie#151 merged
+on 2026-09-12 with the defects from [[upstream/session-reconstruction]]
+repaired, and the `reference/llmoxie` submodule pin carries that revision, so
+both the adapters (#3) and the transform (#5) can now build directly on the
+session objects it produces. The caveats recorded in
+[[caveats/dedup-vs-last-request]] and [[caveats/responses-api-gap]] were
+discovered inside it; merging it first means those behaviors are fixed in one
+place rather than reproduced in two.
 
 **#4, #7, and #10 have no upstream dependency.** The schema is a set of
 declarations, the state manifest is self-contained JSON bookkeeping, and
