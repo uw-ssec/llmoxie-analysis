@@ -92,14 +92,13 @@ which is the positive check that keeps the `nop` agent from scoring 1.
 
 ## Coverage enforcement
 
-`tests/test_skill_evals.py` runs in the default pytest suite and fails the gate
-when any skill directory under `.agents/skills/` lacks
-`evals/inspect/samples/<name>.yaml` or a complete `evals/harbor/tasks/<name>/`
-(`task.toml`, `instruction.md`, `environment/Dockerfile`,
-`solution/solve.sh`, `tests/test.sh`). It also runs
-`evals/harbor/base/shims/test_shims.sh`, so a shim regression fails locally
-without Docker. Guard tasks are not enforced by the test; they exist for the
-five skills with a NEVER rule.
+`tests/test_skill_evals.py` runs in the default pytest suite and enforces four
+things that match its function names: every skill has an Inspect samples file,
+every skill has a Harbor task directory, every Harbor task directory present is
+complete (`task.toml`, `instruction.md`, `environment/Dockerfile`,
+`solution/solve.sh`, `tests/test.sh`), and
+`evals/harbor/base/shims/test_shims.sh` exits 0. Guard tasks are not counted or
+required by that test; they are added separately for skills with a NEVER rule.
 
 ## Where each half runs
 
@@ -115,7 +114,7 @@ oracle matrix) on pushes and PRs that touch `.agents/skills/**`, `evals/**`,
 `pixi.toml`, `pixi.lock` or the workflow itself. Nothing in CI exercises a real
 model; those runs are manual against the gateway.
 
-# Related Concepts
+## Related Concepts
 - [Skill Evaluation with Inspect and Harbor](skill-evals.md): The decision log this walkthrough implements
 - [Inspect Conventions for Skill Samples](inspect-conventions.md): Provider, invocation and rule-writing conventions for the Inspect half
 - [Harbor Conventions for Skill Tasks](harbor-conventions.md): Agent, flag and verifier-helper conventions for the Harbor half

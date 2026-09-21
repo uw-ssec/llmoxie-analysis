@@ -6,6 +6,13 @@
 * **Update**: Linked `project/skill-evals-mechanics.md` to `project/skill-evals.md` (The decision log this walkthrough implements).
 * **Creation**: Documented concept `project/skill-evals-mechanics.md` (Skill Evals Run-Time Mechanics).
 
+## 2026-09-20
+* **Update**: Updated concept `project/epic-and-issues.md`.
+* **Update**: Updated concept `upstream/session-reconstruction.md`.
+* **Update**: Updated concept `upstream/session-reconstruction.md`.
+* **Update**: Updated concept `project/epic-and-issues.md`.
+* **Update**: Updated concept `upstream/session-reconstruction.md`.
+
 ## 2026-09-19
 * **Update**: Linked `platform/litellm-spend-logs.md` to `upstream/session-reconstruction.md` (A single `.jsonl` export, as `dbexport.sh` produces, selects that module's streaming code path instead of the DataFrame path a zip takes.).
 * **Update**: Linked `caveats/end-user-parsing.md` to `datasets/jan-mar-2026-findings.md` (Its count of 13,221 distinct native `session_id` values across 13,291 records is why upstream's fallback to that column inflates session counts.).

@@ -1,9 +1,9 @@
 ---
 type: Fact
 title: group_sessions.py — Reconstructing Conversations
-description: "The upstream prototype that groups flat request rows into per-session conversations, its DataFrame and streaming code paths, and the specific behaviors this project must preserve or repair."
+description: "The upstream prototype that groups flat request rows into per-session conversations, its DataFrame and streaming code paths, and the specific behaviors this project must preserve."
 tags: [sessions, grouping, prototype, upstream, pr-151, pr-167, streaming, parquet]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T00:11:42Z" }
+generated: { by: "opencode:qwen3.8-27b-oq4e-mtp", at: "2026-09-20T06:06:47Z" }
 code_refs: [reference/llmoxie/src/llmaven/data/group_sessions.py, reference/llmoxie/src/llmaven/data/README.md]
 sources:
   - resource: reference/llmoxie/src/llmaven/data/group_sessions.py (673 lines)
@@ -17,8 +17,9 @@ Landed 2026-09-11 in commit `ec5d8b2` (PR #151) and reworked a week later in
 upstream code — and the direct prerequisite for this project. The
 `reference/llmoxie` submodule is pinned at `3e9a694`, and this concept describes
 that revision.
-Issue #2 of [[project/epic-and-issues]] is "fix and merge `group_sessions.py`";
-nothing else in the pipeline can proceed until it does.
+Issue #2 of [[project/epic-and-issues]] was "fix and merge `group_sessions.py`";
+it is done — the defects it listed are repaired in this revision and the
+ticket closed on 2026-09-20.
 
 It sits one layer above [[upstream/reader-flattening]]: where `reader.py`
 produces block rows, `group_sessions.py` collapses them into one record per
@@ -197,11 +198,18 @@ when requests with an unparsable `end_user` were dropped. With the native
 `session_id` fallback the same input should produce far more sessions; the
 README figure has not been re-measured.
 
-## Known defects to repair
+## Repaired issue #2 defects
 
-Issue #2 enumerates them: no unit tests or fixtures, `print` used instead of
-`logging`, the temp-file leak, silent failures in the output-message path, and
-`skipped_session_count` not being reported.
+The five defects Issue #2 enumerated — no unit tests or fixtures, `print` used
+instead of `logging`, the temp-file leak on zip reads, silent failures in the
+output-message path, and `skipped_session_count` not being reported — are all
+repaired in this revision: 17 unit tests plus the hand-checked fixture
+`tests/data/fixtures/test.jsonl`, `logging` throughout, in-place zip reads,
+warnings on data that fails to parse, and the skip count logged on both code paths.
+PR #151 passed CI and merged on 2026-09-12; the ticket closed 2026-09-20.
+What remains in this concept are the design-level concerns above — the
+two-path drift and the unchecked Parquet cache — which are still live and the
+real input to what stage two of the pipeline becomes.
 
 ## Related Concepts
 
