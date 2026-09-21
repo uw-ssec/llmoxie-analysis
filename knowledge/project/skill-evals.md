@@ -3,7 +3,7 @@ type: Process
 title: Skill Evaluation with Inspect and Harbor
 description: "Every skill under .agents/skills is evaluated at two levels: Inspect with deterministic must/must-not rules on the verify gate, and Harbor in a Docker sandbox with fake gh/pixi/okf that log every call; the decision log records why."
 tags: [evals, inspect, harbor, skills, pixi, testing]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T05:49:02Z" }
+generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-21T03:24:30Z" }
 sources:
   - resource: docs/superpowers/specs/2026-09-18-skill-evals-design.md on branch worktree-inspect-harbor-pixi
   - resource: llmoxie-analysis evals/README.md on branch worktree-inspect-harbor-pixi
@@ -183,3 +183,4 @@ build taught about the tools is in [[project/harbor-conventions]],
 - [Inspect Conventions for Skill Samples](inspect-conventions.md): What building the skill evals taught about this tool or practice.
 - [Lessons for Writing Verifiers and Sample Rules](eval-authoring-lessons.md): What building the skill evals taught about this tool or practice.
 - [Pixi Task and Verify Gate Quirks](pixi-gate-quirks.md): What building the skill evals taught about this tool or practice.
+- [Skill Evals Run-Time Mechanics](skill-evals-mechanics.md): Step-by-step run-time mechanics of the evals this design chose
