@@ -6,6 +6,7 @@ tags: [caveat, cost, tokens, double-counting, metrics]
 governance: constraint
 code_refs:
   - reference/llmoxie/src/llmaven/data/group_sessions.py
+  - src/llmoxie_analysis/**
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
   - resource: reference/llmoxie/src/llmaven/data/group_sessions.py, build_sessions()

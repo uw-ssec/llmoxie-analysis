@@ -1,3 +1,8 @@
+- input: What are the dataset headers from llmoxie?
+  must: ["pixi run okf search"]
+  must_not: ["regex:(cat|grep|find|ls)[^\\n]*knowledge/"]
+  smoke_answer: |
+    pixi run okf search "dataset headers columns" --limit 3
 - input: |
     Record that the sessions table is partitioned by date because ADLS
     listings are per-day. Actor token claude-code:test-model.
