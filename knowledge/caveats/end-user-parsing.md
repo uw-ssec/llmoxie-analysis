@@ -5,7 +5,7 @@ description: "Session identity is recovered by parsing a free-form client-suppli
 tags: [caveat, data-quality, sessions, end-user, coverage]
 generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T00:11:08Z" }
 governance: constraint
-code_refs: [reference/llmoxie/src/llmaven/data/reader.py, reference/llmoxie/src/llmaven/data/group_sessions.py]
+code_refs: [reference/llmoxie/src/llmaven/data/reader.py, reference/llmoxie/src/llmaven/data/group_sessions.py, "src/llmoxie_analysis/**"]
 sources:
   - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/1"
   - resource: "reference/llmoxie/src/llmaven/data/reader.py, _parse_end_user() and _base_row()"

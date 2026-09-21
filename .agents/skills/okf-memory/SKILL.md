@@ -1,10 +1,11 @@
 ---
 name: okf-memory
 description:
-  Use when a decision, constraint, or non-obvious discovery from this session
-  should outlive it, before changing code in an area that may carry recorded
-  constraints, when asked what the project decided about something, or when `okf
-  validate` fails.
+  Use before answering any question about the LLMoxie data, platform, pipeline
+  design, or a past decision; before changing code in an area that may carry
+  recorded constraints; when a decision or non-obvious discovery from this
+  session should outlive it; or when `okf validate` fails. Not for how-to-run
+  questions, which the rules and other skills answer.
 ---
 
 # OKF Memory

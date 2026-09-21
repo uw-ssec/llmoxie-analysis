@@ -53,11 +53,20 @@ Load the rule file whose trigger matches what you are about to do.
   the matching one before you verify, run tests, commit, push, open or merge a
   PR, file an issue, cut a release, set up the environment, write docs, or clean
   up branches. A harness that lists skills natively loads them for you.
-- **Project memory** is the OKF bundle at `knowledge/`: decisions, data caveats,
-  and constraints the code cannot tell you. Before the first edit to a file, run
-  `pixi run okf search --for-path <file>` — a `constraint` hit lists invariants
-  the change must keep, and a `hold` hit means stop and confirm with the user.
-  Read and write the bundle through the `okf-memory` skill.
+- **Project memory** is the OKF bundle at `knowledge/`: what the code cannot
+  tell you — the LLMoxie platform, the data and its caveats, the pipeline
+  design, and the reasons behind each decision. Consult it before you answer,
+  not only before you edit:
+  - Asked about the data, the platform, the pipeline, or why something is the
+    way it is? Run `pixi run okf search "<keywords>" --limit 3` before answering
+    from general knowledge, and cite the concept id in your reply or say the
+    bundle had nothing. Questions about running commands are answered by the
+    rules and skills, not the bundle.
+  - Before the first edit to a file, run
+    `pixi run okf search --for-path <file>`. A `constraint` hit lists invariants
+    the change must keep; a `hold` hit means stop and confirm with the user.
+  - Learned something the next agent could not derive from the code? Record it
+    through the `okf-memory` skill, which also holds the full command reference.
 
 ## Provenance
 

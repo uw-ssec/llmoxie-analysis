@@ -7,6 +7,7 @@ governance: constraint
 code_refs:
   - reference/llmoxie/src/llmaven/data/group_sessions.py
   - reference/llmoxie/src/llmaven/data/reader.py
+  - src/llmoxie_analysis/**
 sources:
   - resource: reference/llmoxie/src/llmaven/data/group_sessions.py, _adls_record_to_spend_log_shape() docstring
   - resource: reference/llmoxie/src/llmaven/data/reader.py, _rows_from_record()
