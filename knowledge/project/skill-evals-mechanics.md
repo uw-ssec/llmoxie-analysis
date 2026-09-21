@@ -114,7 +114,7 @@ oracle matrix) on pushes and PRs that touch `.agents/skills/**`, `evals/**`,
 `pixi.toml`, `pixi.lock` or the workflow itself. Nothing in CI exercises a real
 model; those runs are manual against the gateway.
 
-# Related Concepts
+## Related Concepts
 - [Skill Evaluation with Inspect and Harbor](skill-evals.md): The decision log this walkthrough implements
 - [Inspect Conventions for Skill Samples](inspect-conventions.md): Provider, invocation and rule-writing conventions for the Inspect half
 - [Harbor Conventions for Skill Tasks](harbor-conventions.md): Agent, flag and verifier-helper conventions for the Harbor half
