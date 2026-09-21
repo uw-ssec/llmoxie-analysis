@@ -1,3 +1,11 @@
+## 2026-09-21
+* **Update**: Linked `project/skill-evals-mechanics.md` to `project/eval-authoring-lessons.md` (Rules to keep when editing the verifiers and samples this walkthrough describes).
+* **Update**: Linked `project/skill-evals-mechanics.md` to `project/harbor-conventions.md` (Agent, flag and verifier-helper conventions for the Harbor half).
+* **Update**: Linked `project/skill-evals-mechanics.md` to `project/inspect-conventions.md` (Provider, invocation and rule-writing conventions for the Inspect half).
+* **Update**: Linked `project/skill-evals.md` to `project/skill-evals-mechanics.md` (Step-by-step run-time mechanics of the evals this design chose).
+* **Update**: Linked `project/skill-evals-mechanics.md` to `project/skill-evals.md` (The decision log this walkthrough implements).
+* **Creation**: Documented concept `project/skill-evals-mechanics.md` (Skill Evals Run-Time Mechanics).
+
 ## 2026-09-19
 * **Update**: Linked `platform/litellm-spend-logs.md` to `upstream/session-reconstruction.md` (A single `.jsonl` export, as `dbexport.sh` produces, selects that module's streaming code path instead of the DataFrame path a zip takes.).
 * **Update**: Linked `caveats/end-user-parsing.md` to `datasets/jan-mar-2026-findings.md` (Its count of 13,221 distinct native `session_id` values across 13,291 records is why upstream's fallback to that column inflates session counts.).
