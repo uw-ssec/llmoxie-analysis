@@ -1,3 +1,7 @@
+## 2026-09-23
+* **Update**: Linked `project/harness-agent-wiring.md` to `project/skill-evals.md` (Skills under .agents/skills carry eval coverage that subagent definitions under .claude/agents do not.).
+* **Creation**: Documented concept `project/harness-agent-wiring.md` (Harness wiring: where agent definitions live and which harness reads them).
+
 ## 2026-09-21
 * **Update**: Linked `project/skill-evals-mechanics.md` to `project/eval-authoring-lessons.md` (Rules to keep when editing the verifiers and samples this walkthrough describes).
 * **Update**: Linked `project/skill-evals-mechanics.md` to `project/harbor-conventions.md` (Agent, flag and verifier-helper conventions for the Harbor half).
