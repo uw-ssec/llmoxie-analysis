@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Install the pixi environment (if a manifest exists) and auto-activate it in
-# interactive shells.
+# Auto-activate the pixi environment in interactive shells.
+#
+# This runs as the devcontainer "postCreateCommand", which is *not* baked into a
+# Codespaces prebuild -- it re-runs on every codespace. Keep it cheap: the
+# expensive, cacheable work (submodules and pixi environments) lives in
+# update-content.sh so the prebuild can carry it.
 set -euo pipefail
 
 GREEN="\033[0;32m"
@@ -12,13 +16,8 @@ STAGE="post-create"
 say()  { printf "%b\n==> [%s] %s%b\n" "${BOLD}${GREEN}" "${STAGE}" "$*" "${RESET}"; }
 info() { printf "      %s\n" "$*"; }
 
-say "$(pixi --version)"
-
-if [ -f pixi.toml ] || [ -f pyproject.toml ]; then
-  say "Installing pixi environment"
-  pixi install
-else
-  info "No pixi.toml or pyproject.toml found; skipping pixi install"
+if [ ! -f pixi.toml ] && [ ! -f pyproject.toml ]; then
+  info "No pixi.toml or pyproject.toml found; skipping shell auto-activation"
   exit 0
 fi
 
