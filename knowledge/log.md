@@ -1,4 +1,8 @@
 ## 2026-09-23
+* **Update**: Linked `project/codespaces-prebuild.md` to `project/pixi-gate-quirks.md` (The prebuild bakes all three pixi environments, so the pixi gate quirks apply to what a prebuilt codespace ships with).
+* **Update**: Updated concept `project/codespaces-prebuild.md`.
+* **Update**: Linked `project/codespaces-prebuild.md` to `project/pixi-gate-quirks.md` (The prebuild bakes all three pixi environments, so the pixi gate quirks apply to what a prebuilt codespace ships with).
+* **Creation**: Documented concept `project/codespaces-prebuild.md` (Codespaces prebuilds and the devcontainer lifecycle).
 * **Update**: Linked `project/evidence-auditor-plan.md` to `project/skill-evals.md` (The two-level suite this plan extends to cover agents as well as skills.).
 * **Update**: Linked `project/evidence-auditor-plan.md` to `project/harness-agent-wiring.md` (Where an agent definition must live and why the standard cannot live only in it.).
 * **Creation**: Documented concept `project/evidence-auditor-plan.md` (Adversarial review agents: the design settled in brainstorming and what is left to build).
