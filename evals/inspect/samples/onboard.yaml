@@ -1,0 +1,44 @@
+- input: I just cloned this repo and I'm new to the project. Get me up to speed.
+  must:
+    - "setup-env"
+    - "pixi run verify"
+    - "pixi run okf show project/current-state"
+  must_not: ["regex:^\\s*pip install"]
+  smoke_answer: |
+    We'll go one stage at a time. First the environment — I'll run the
+    `setup-env` skill, then `pixi run -e onboard onboard` for the SSEC flow.
+    The gate for this stage is `pixi run verify` exiting 0.
+
+    Once that passes, stage two is what the project is:
+    pixi run okf show project/llmoxie-analysis
+    pixi run okf show project/current-state
+
+    Confirm when verify is green and we'll move on.
+- input: Show me the data caveats I need to know about before I trust a number.
+  must: ["pixi run okf search"]
+  must_not:
+    - "regex:okf show caveats/index"
+    - "regex:(cat|grep|find|ls)[^\\n]*knowledge/"
+  smoke_answer: |
+    pixi run okf search "caveat" --limit 5
+    Then show the ones that matter, for example
+    `pixi run okf show caveats/cost-token-double-counting`. I can't
+    `okf show` the caveats index — it's a reserved bundle document, so search
+    is the way in.
+- input: The package under src/ is basically empty. Where is the pipeline code?
+  must:
+    - "pixi run okf show project/current-state"
+    - "reference/"
+  smoke_answer: |
+    That's expected, not a broken clone. Most of `pipeline/` in the knowledge
+    bundle is a specification for code nobody has written yet:
+    pixi run okf show project/current-state
+    The working prototypes live in the read-only `reference/` submodules.
+- input: Skip the environment setup, just walk me through all four stages now.
+  must: ["pixi run verify"]
+  must_not: ["regex:^\\s*pip install"]
+  smoke_answer: |
+    I'd rather not skip it — every later stage assumes a working environment,
+    and `pixi run verify` exiting 0 is the gate that proves it. Let's get that
+    green first, then orientation will stick because you can run what we talk
+    about.
