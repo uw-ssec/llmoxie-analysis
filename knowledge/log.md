@@ -1,4 +1,7 @@
 ## 2026-09-23
+* **Update**: Linked `project/evidence-auditor-plan.md` to `project/skill-evals.md` (The two-level suite this plan extends to cover agents as well as skills.).
+* **Update**: Linked `project/evidence-auditor-plan.md` to `project/harness-agent-wiring.md` (Where an agent definition must live and why the standard cannot live only in it.).
+* **Creation**: Documented concept `project/evidence-auditor-plan.md` (Adversarial review agents: the design settled in brainstorming and what is left to build).
 * **Update**: Linked `project/harness-agent-wiring.md` to `project/skill-evals.md` (Skills under .agents/skills carry eval coverage that subagent definitions under .claude/agents do not.).
 * **Creation**: Documented concept `project/harness-agent-wiring.md` (Harness wiring: where agent definitions live and which harness reads them).
 
