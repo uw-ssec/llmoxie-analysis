@@ -51,8 +51,9 @@ Load the rule file whose trigger matches what you are about to do.
 
 - **Skills** are step-by-step recipes at `.agents/skills/<name>/SKILL.md`. Read
   the matching one before you verify, run tests, commit, push, open or merge a
-  PR, file an issue, cut a release, set up the environment, write docs, or clean
-  up branches. A harness that lists skills natively loads them for you.
+  PR, file an issue, cut a release, set up the environment, onboard someone new,
+  write docs, or clean up branches. A harness that lists skills natively loads
+  them for you.
 - **Project memory** is the OKF bundle at `knowledge/`: what the code cannot
   tell you — the LLMoxie platform, the data and its caveats, the pipeline
   design, and the reasons behind each decision. Consult it before you answer,
