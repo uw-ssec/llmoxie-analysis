@@ -44,7 +44,7 @@ pixi run -e evals inspect-view                                   # browse Inspec
 pixi run -e evals harbor-view                                    # browse Harbor trajectories
 ```
 
-## Running against the LLMaven gateway
+## Running against the LLMoxie gateway
 
 The gateway is a LiteLLM proxy. Put its URL and token in a gitignored `.env` at
 the repository root as `LLMOXIE_ENDPOINT` and `LLMOXIE_API_TOKEN`, then map them

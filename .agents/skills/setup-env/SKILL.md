@@ -54,7 +54,7 @@ pixi install && pixi run setup && pixi run verify
 
 ## Secrets and environment variables
 
-None are needed today. Pipeline work against live LLMaven deployments will take
+None are needed today. Pipeline work against live LLMoxie deployments will take
 LiteLLM and Azure Storage credentials through an `--env-file`; keep them in a
 gitignored `.env*` file and never in `pixi.toml`, tests, or fixtures.
 

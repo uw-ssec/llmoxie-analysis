@@ -51,6 +51,13 @@ repos:
         language: pygrep
         entry: Github
         exclude: .pre-commit-config.yaml
+      - id: no-llmaven
+        name: Use the current project name (LLMoxie)
+        language: pygrep
+        # Case-sensitive on purpose: lowercase `llmaven` is the real upstream
+        # package and CLI name. History and design records keep the old name.
+        entry: '\bLLMaven\b'
+        exclude: ^(\.pre-commit-config\.yaml|knowledge/log\.md|knowledge/platform/llmoxie-(timeline|platform)\.md|docs/superpowers/.*)$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: "0.28.4"
