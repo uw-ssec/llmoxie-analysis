@@ -1,3 +1,7 @@
+## 2026-09-25
+* **Update**: Updated concept `project/inspect-conventions.md`.
+* **Update**: Updated concept `project/skill-evals.md`.
+
 ## 2026-09-23
 * **Update**: Linked `project/codespaces-prebuild.md` to `project/pixi-gate-quirks.md` (The prebuild bakes all three pixi environments, so the pixi gate quirks apply to what a prebuilt codespace ships with).
 * **Update**: Updated concept `project/codespaces-prebuild.md`.

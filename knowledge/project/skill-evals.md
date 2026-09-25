@@ -3,7 +3,7 @@ type: Process
 title: Skill Evaluation with Inspect and Harbor
 description: "Every skill under .agents/skills is evaluated at two levels: Inspect with deterministic must/must-not rules on the verify gate, and Harbor in a Docker sandbox with fake gh/pixi/okf that log every call; the decision log records why."
 tags: [evals, inspect, harbor, skills, pixi, testing]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-21T03:24:30Z" }
+generated: { by: "claude-code:claude-opus-5-5", at: "2026-09-25T15:05:48Z" }
 sources:
   - resource: docs/superpowers/specs/2026-09-18-skill-evals-design.md on branch worktree-inspect-harbor-pixi
   - resource: llmoxie-analysis evals/README.md on branch worktree-inspect-harbor-pixi
@@ -142,7 +142,7 @@ The Inspect smoke is deterministic and keyless, so it is part of
 `pixi run verify`. Harbor needs a Docker daemon on the host, which is the main
 reason an agent may be unable to run the agent-level half locally.
 
-## Running against the LLMaven gateway (observed 2026-09-19)
+## Running against the LLMoxie gateway (observed 2026-09-19)
 
 The gateway is a LiteLLM proxy; credentials live in a gitignored `.env`
 (`LLMOXIE_ENDPOINT`, `LLMOXIE_API_TOKEN`). What worked and what did not:

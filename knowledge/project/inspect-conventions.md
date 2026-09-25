@@ -1,9 +1,9 @@
 ---
 type: Reference
 title: Inspect Conventions for Skill Samples
-description: "How the Inspect harness is invoked, which providers reach the LLMaven gateway, and the rule semantics and sample-writing rules that real-model runs forced."
+description: "How the Inspect harness is invoked, which providers reach the LLMoxie gateway, and the rule semantics and sample-writing rules that real-model runs forced."
 tags: [inspect, evals, gateway, litellm, samples]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T05:48:36Z" }
+generated: { by: "claude-code:claude-opus-5-5", at: "2026-09-25T15:05:52Z" }
 governance: context
 code_refs: ["evals/inspect/**"]
 sources:
@@ -32,7 +32,7 @@ on 2026-09-18 and 2026-09-19.
 ## Providers and the gateway
 
 - The `anthropic` provider needs the `anthropic` package (added to the `evals`
-  feature) and reaches any model on the LLMaven LiteLLM gateway through
+  feature) and reaches any model on the LLMoxie LiteLLM gateway through
   `ANTHROPIC_BASE_URL` and `ANTHROPIC_API_KEY`, because the proxy serves the
   Anthropic messages API for every model name. Use `anthropic/<gateway model>`.
 - The `openai` and `openai-api` providers require `openai>=3.1`, which the same
