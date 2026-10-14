@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -72,7 +72,35 @@ def _base_row(record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _rows_from_block(
+_BLOCK_COLUMNS = ("text", "thinking", "tool_name", "tool_input", "tool_use_id")
+
+
+def _block_columns(block: dict[str, Any]) -> dict[str, Any]:
+    """Map one content block onto the flat per-block value columns.
+
+    Every block row carries the same columns; which one is populated depends
+    on ``block["type"]``. Unknown types are JSON-serialised into ``text`` so
+    no data is lost.
+    """
+    columns: dict[str, Any] = dict.fromkeys(_BLOCK_COLUMNS)
+    btype = block.get("type")
+
+    if btype == "text":
+        columns["text"] = block.get("text")
+    elif btype == "thinking":
+        columns["thinking"] = block.get("thinking")
+    elif btype == "tool_use":
+        columns["tool_name"] = block.get("name")
+        columns["tool_use_id"] = block.get("id")
+        input_val = block.get("input")
+        columns["tool_input"] = json.dumps(input_val) if input_val is not None else None
+    else:
+        columns["text"] = json.dumps(block)
+
+    return columns
+
+
+def _row_from_block(
     base: dict[str, Any],
     direction: str,
     msg_idx: int | None,
@@ -82,65 +110,37 @@ def _rows_from_block(
     *,
     include_thinking: bool,
     include_tool_use: bool,
-) -> list[dict[str, Any]]:
-    """Convert one content block into zero or one row dicts."""
+) -> dict[str, Any] | None:
+    """Convert one content block into a row dict, or None if it is filtered out."""
     if isinstance(block, str):
-        return [
-            {
-                **base,
-                "direction": direction,
-                "msg_idx": msg_idx,
-                "block_idx": block_idx,
-                "role": role,
-                "type": "text",
-                "text": block,
-                "thinking": None,
-                "tool_name": None,
-                "tool_input": None,
-                "tool_use_id": None,
-                "cache_control": None,
-            }
-        ]
+        block = {"type": "text", "text": block}
 
     btype = block.get("type", "unknown")
-
     if btype == "thinking" and not include_thinking:
-        return []
+        return None
     if btype == "tool_use" and not include_tool_use:
-        return []
+        return None
 
     cache = block.get("cache_control")
-    cache_control = cache.get("type") if isinstance(cache, dict) else None
 
-    row: dict[str, Any] = {
+    return {
         **base,
         "direction": direction,
         "msg_idx": msg_idx,
         "block_idx": block_idx,
         "role": role,
         "type": btype,
-        "text": None,
-        "thinking": None,
-        "tool_name": None,
-        "tool_input": None,
-        "tool_use_id": None,
-        "cache_control": cache_control,
+        **_block_columns(block),
+        "cache_control": cache.get("type") if isinstance(cache, dict) else None,
     }
 
-    if btype == "text":
-        row["text"] = block.get("text")
-    elif btype == "thinking":
-        row["thinking"] = block.get("thinking")
-    elif btype == "tool_use":
-        row["tool_name"] = block.get("name")
-        row["tool_use_id"] = block.get("id")
-        input_val = block.get("input")
-        row["tool_input"] = json.dumps(input_val) if input_val is not None else None
-    else:
-        # Fallback: serialise unknown block types so no data is lost
-        row["text"] = json.dumps(block)
 
-    return [row]
+def _iter_blocks(content: Any) -> Iterator[dict[str, Any] | str]:
+    """Yield a message's content blocks, whether it is a string or a list."""
+    if isinstance(content, str):
+        yield content
+    elif isinstance(content, list):
+        yield from content
 
 
 def _rows_from_record(
@@ -154,23 +154,19 @@ def _rows_from_record(
     rows: list[dict[str, Any]] = []
     base = _base_row(record)
 
+    def _add(direction: str, msg_idx: int | None, role: str, content: Any) -> None:
+        """Append every surviving block row of one message's content."""
+        for block_idx, block in enumerate(_iter_blocks(content)):
+            row = _row_from_block(
+                base, direction, msg_idx, role, block_idx, block, **kwargs
+            )
+            if row is not None:
+                rows.append(row)
+
     # ── Input messages ────────────────────────────────────────────
     messages = record.get("proxy_server_request", {}).get("messages", [])
     for msg_idx, message in enumerate(messages):
-        role = message.get("role", "")
-        content = message.get("content", "")
-
-        if isinstance(content, str):
-            rows.extend(
-                _rows_from_block(base, "input", msg_idx, role, 0, content, **kwargs)
-            )
-        elif isinstance(content, list):
-            for block_idx, block in enumerate(content):
-                rows.extend(
-                    _rows_from_block(
-                        base, "input", msg_idx, role, block_idx, block, **kwargs
-                    )
-                )
+        _add("input", msg_idx, message.get("role", ""), message.get("content", ""))
 
     # ── Output message ────────────────────────────────────────────
     out_msg = None
@@ -186,19 +182,12 @@ def _rows_from_record(
             )
 
     if out_msg:
-        role = out_msg.get("role", "assistant")
-        content = out_msg.get("content", "")
-        if isinstance(content, str):
-            rows.extend(
-                _rows_from_block(base, "output", None, role, 0, content, **kwargs)
-            )
-        elif isinstance(content, list):
-            for block_idx, block in enumerate(content):
-                rows.extend(
-                    _rows_from_block(
-                        base, "output", None, role, block_idx, block, **kwargs
-                    )
-                )
+        _add(
+            "output",
+            None,
+            out_msg.get("role", "assistant"),
+            out_msg.get("content", ""),
+        )
     elif not messages:
         logger.warning(
             "request_id=%s: record yielded neither input nor output messages",
@@ -330,73 +319,6 @@ def deduplicate_messages(df: pd.DataFrame) -> pd.DataFrame:
         [input_deduped, df[df["direction"] == "output"]],
         ignore_index=True,
     )
-
-
-def flatten_value(value: Any) -> Any:
-    """Flatten a list or dict value into a comma-separated string.
-
-    Leaves scalar values unchanged.
-
-    Parameters
-    ----------
-    value:
-        The value to flatten.
-
-    Returns
-    -------
-    Any
-        A comma-separated string for lists/dicts, or the original value otherwise.
-    """
-    if isinstance(value, list):
-        return ", ".join(str(v) for v in value)
-    if isinstance(value, dict):
-        return ", ".join(f"{k}: {v}" for k, v in value.items())
-    return value
-
-
-def get_value(record: dict[str, Any], keys: list[str]) -> Any:
-    """Traverse a nested dict by a sequence of keys.
-
-    Parameters
-    ----------
-    record:
-        The top-level dict to traverse.
-    keys:
-        Ordered sequence of keys forming the path to the desired value.
-
-    Returns
-    -------
-    Any
-        The value at the end of the key path, or ``None`` if any key is missing.
-    """
-    current: Any = record
-    for key in keys:
-        if isinstance(current, dict) and key in current:
-            current = current[key]
-        else:
-            return None
-    return current
-
-
-def inspect_keys(data: list[dict[str, Any]], keys: list[str]) -> None:
-    """Log the unique values found at a key path across a list of records.
-
-    Logs up to 10 unique values; reports only the count when more are found.
-
-    Parameters
-    ----------
-    data:
-        List of records (dicts) to inspect.
-    keys:
-        Key path passed to :func:`get_value` for each record.
-    """
-    values = {flatten_value(get_value(record, keys)) for record in data}
-
-    logger.info("Found %d unique values for keys %s", len(values), keys)
-    if len(values) > 10:
-        logger.info("Too many unique values to display (%d)", len(values))
-    else:
-        logger.info("Unique values: %s", values)
 
 
 def normalize_model_name(model: str | None) -> str | None:

@@ -145,9 +145,13 @@ it was last resent.
 
 ## Utilities
 
-`flatten_value(value)`, `get_value(record, keys)`, `inspect_keys(data, keys)`,
-and `normalize_model_name(model)` — the last of which is significant enough to
-have its own note, [[upstream/model-name-normalization]].
+`normalize_model_name(model)`, significant enough to have its own note,
+[[upstream/model-name-normalization]].
+
+The upstream module also carries `flatten_value(value)`, `get_value(record,
+keys)` and `inspect_keys(data, keys)` — ad-hoc exploration helpers that nothing
+in this repo ever called. They were deleted from the `src/` copy on
+2026-10-14; look upstream if you need them back.
 
 ## Related Concepts
 

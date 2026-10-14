@@ -69,7 +69,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from tqdm import tqdm
 
-from .reader import _parse_end_user, _rows_from_record
+from .reader import _block_columns, _parse_end_user, _rows_from_record
 from .sources import from_adls
 
 logger = logging.getLogger(__name__)
@@ -189,12 +189,13 @@ def _reconstruct_conversation(last_request_rows: pd.DataFrame) -> list[dict[str,
 def _sessions_to_flat_rows(sessions: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Explode session records into one flat row per message content block.
 
-    Same row shape as the block-level DataFrame ``_load_all`` produces (one
-    row = one block), but built from the reconstructed session messages
-    rather than raw request rows, with session-level fields (spend, tokens,
-    time span, ...) repeated onto every row. Meant as an alternative,
-    non-nested output format for tools that work better with flat tables
-    (e.g. loading into a DataFrame or parquet) than with nested JSON.
+    One row = one block, same value columns as the block-level rows
+    :func:`~.reader._rows_from_record` produces, but built from the
+    reconstructed session messages rather than raw request rows, with
+    session-level fields (spend, tokens, time span, ...) repeated onto every
+    row. Meant as an alternative, non-nested output format for tools that work
+    better with flat tables (e.g. loading into a DataFrame or parquet) than
+    with nested JSON.
     """
     rows: list[dict[str, Any]] = []
     for session in sessions:
@@ -204,49 +205,18 @@ def _sessions_to_flat_rows(sessions: list[dict[str, Any]]) -> list[dict[str, Any
 
         for msg_idx, message in enumerate(session["messages"]):
             for block_idx, block in enumerate(message["content"]):
-                row = {
-                    **session_meta,
-                    "msg_idx": msg_idx,
-                    "role": message["role"],
-                    "block_idx": block_idx,
-                    "type": block.get("type"),
-                    "text": None,
-                    "thinking": None,
-                    "tool_name": None,
-                    "tool_input": None,
-                    "tool_use_id": None,
-                }
-                if block.get("type") == "text":
-                    row["text"] = block.get("text")
-                elif block.get("type") == "thinking":
-                    row["thinking"] = block.get("thinking")
-                elif block.get("type") == "tool_use":
-                    row["tool_name"] = block.get("name")
-                    row["tool_use_id"] = block.get("id")
-                    input_val = block.get("input")
-                    row["tool_input"] = (
-                        json.dumps(input_val) if input_val is not None else None
-                    )
-                else:
-                    row["text"] = json.dumps(block)
-                rows.append(row)
+                rows.append(
+                    {
+                        **session_meta,
+                        "msg_idx": msg_idx,
+                        "role": message["role"],
+                        "block_idx": block_idx,
+                        "type": block.get("type"),
+                        **_block_columns(block),
+                    }
+                )
     return rows
 
-
-_PARQUET_COLS = (
-    "request_id",
-    "session_id",
-    "direction",
-    "msg_idx",
-    "block_idx",
-    "role",
-    "type",
-    "text",
-    "thinking",
-    "tool_name",
-    "tool_input",
-    "tool_use_id",
-)
 
 # Explicit schema prevents PyArrow from inferring `null` type for columns whose
 # first batch happens to contain only None values (e.g. thinking, tool_name).
@@ -266,6 +236,8 @@ _PARQUET_SCHEMA = pa.schema(
         pa.field("tool_use_id", pa.string()),
     ]
 )
+
+_PARQUET_COLS = tuple(_PARQUET_SCHEMA.names)
 
 _PARQUET_BATCH_SIZE = 10_000
 
@@ -313,9 +285,7 @@ def _scan_and_write_blocks(
         nonlocal batch
         if not batch:
             return
-        arrays = {col: [row.get(col) for row in batch] for col in _PARQUET_COLS}
-        table = pa.table(arrays, schema=_PARQUET_SCHEMA)
-        writer.write_table(table)
+        writer.write_table(pa.Table.from_pylist(batch, schema=_PARQUET_SCHEMA))
         batch = []
 
     # Suppress per-record reader warnings during streaming; count and report in
