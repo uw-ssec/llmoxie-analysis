@@ -473,6 +473,66 @@ class TestLastRequestSelection:
         assert texts == ["q0", "a0", "q1", "a1", "q2", "a2"]
 
 
+class TestSessionStatsSeeding:
+    """Pass 1 seeds a session's stats on first sight, then accumulates.
+
+    The seed is neutral for the summed fields but takes the first record's
+    values for identity and for the chosen-request tie-break, which is what
+    these guard.
+    """
+
+    def test_session_with_no_messages_still_picks_a_request(
+        self, tmp_path: Path
+    ) -> None:
+        # Every request has an empty input and no timestamp, but a parseable
+        # reply — so the session has block rows, yet neither half of the
+        # tie-break can ever beat a neutral seed. Seeding `_best_*` from the
+        # first record is what keeps the session from being dropped in pass 2
+        # for want of a chosen request_id.
+        records = [
+            _record("r1", "s1", start="", reply=[{"type": "text", "text": "a"}]),
+            _record("r2", "s1", start="", reply=[{"type": "text", "text": "b"}]),
+        ]
+        sessions = _sessions_by_id(
+            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
+        )
+
+        assert sessions["s1"]["n_requests"] == 2
+        assert _transcript(sessions["s1"]) == [("assistant", "text")]
+
+    def test_first_record_wins_for_identity_fields(self, tmp_path: Path) -> None:
+        later = _record("r2", "s1", messages=[_text("user", "q")])
+        later["end_user"] = json.dumps(
+            {"device_id": "d2", "account_uuid": "a2", "session_id": "s1"}
+        )
+        later["metadata"] = {"user_api_key_alias": "alias2"}
+        sessions = _sessions_by_id(
+            _write_jsonl(tmp_path / "logs.jsonl", [_record("r1", "s1"), later]),
+            tmp_path,
+        )
+
+        assert sessions["s1"]["device_id"] == "d1"
+        assert sessions["s1"]["account_uuid"] == "a1"
+        assert sessions["s1"]["user_api_key_alias"] == "alias"
+
+    def test_totals_and_span_accumulate_across_records(self, tmp_path: Path) -> None:
+        reply = [{"type": "text", "text": "a"}]
+        records = [
+            _record("r1", "s1", start="2026-03-01T00:00:05.000000Z", reply=reply),
+            # Arrives out of order, so start_time is a min and not just the
+            # first record's value.
+            _record("r2", "s1", start="2026-03-01T00:00:01.000000Z", reply=reply),
+        ]
+        sessions = _sessions_by_id(
+            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
+        )
+
+        assert sessions["s1"]["total_spend"] == pytest.approx(0.02)
+        assert sessions["s1"]["total_tokens"] == 200
+        assert sessions["s1"]["start_time"] == "2026-03-01T00:00:01.000000Z"
+        assert sessions["s1"]["end_time"] == "2026-03-01T00:00:05.000000Z"
+
+
 class TestParquetCache:
     def _argv(self, tmp_path: Path, *extra: str) -> list[str]:
         return [

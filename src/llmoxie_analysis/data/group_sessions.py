@@ -319,39 +319,47 @@ def _scan_and_write_blocks(
                 (record.get("proxy_server_request") or {}).get("messages") or []
             )
 
-            if session_id not in session_stats:
-                session_stats[session_id] = {
+            # Seed a neutral record, then run the same accumulation for every
+            # record including the first.  The seed is neutral for the summed
+            # and min/max fields, but takes this record's values for the
+            # first-wins identity fields and for `_best_*` — a neutral
+            # `_best_n_messages` would have to be -1, since a first request
+            # with zero messages cannot beat 0 and would leave the session
+            # with no chosen request at all.
+            s = session_stats.get(session_id)
+            if s is None:
+                s = {
                     "device_id": eu["device_id"],
                     "account_uuid": eu["account_uuid"],
                     "user_api_key_alias": alias,
-                    "n_requests": 1,
-                    "total_spend": spend,
-                    "total_tokens": total_tokens,
+                    "n_requests": 0,
+                    "total_spend": 0.0,
+                    "total_tokens": 0,
                     "start_time": start_time,
                     "end_time": end_time,
-                    "models": {model} if model else set(),
+                    "models": set(),
                     "_best_request_id": request_id,
                     "_best_n_messages": n_messages,
                     "_best_start_time": start_time,
                 }
-            else:
-                s = session_stats[session_id]
-                s["n_requests"] += 1
-                s["total_spend"] += spend
-                s["total_tokens"] += total_tokens
-                if start_time and (not s["start_time"] or start_time < s["start_time"]):
-                    s["start_time"] = start_time
-                if end_time and end_time > s["end_time"]:
-                    s["end_time"] = end_time
-                if model:
-                    s["models"].add(model)
-                if n_messages > s["_best_n_messages"] or (
-                    n_messages == s["_best_n_messages"]
-                    and start_time > s["_best_start_time"]
-                ):
-                    s["_best_request_id"] = request_id
-                    s["_best_n_messages"] = n_messages
-                    s["_best_start_time"] = start_time
+                session_stats[session_id] = s
+
+            s["n_requests"] += 1
+            s["total_spend"] += spend
+            s["total_tokens"] += total_tokens
+            if start_time and (not s["start_time"] or start_time < s["start_time"]):
+                s["start_time"] = start_time
+            if end_time and end_time > s["end_time"]:
+                s["end_time"] = end_time
+            if model:
+                s["models"].add(model)
+            if n_messages > s["_best_n_messages"] or (
+                n_messages == s["_best_n_messages"]
+                and start_time > s["_best_start_time"]
+            ):
+                s["_best_request_id"] = request_id
+                s["_best_n_messages"] = n_messages
+                s["_best_start_time"] = start_time
 
             block_rows = _rows_from_record(
                 record, include_thinking=include_thinking, include_tool_use=True

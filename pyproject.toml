@@ -21,12 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
 ]
-dependencies = [
-    "jsonlines>=4.0",
-    "pandas>=2.0",
-    "pyarrow>=14",
-    "tqdm>=4.66",
-]
+dependencies = ["jsonlines>=4.0", "pandas>=2.0", "pyarrow>=14", "tqdm>=4.66"]
 
 [project.urls]
 Homepage = "https://github.com/uw-ssec/llmoxie-analysis"
@@ -44,7 +39,7 @@ testpaths = ["tests"]
 
 [tool.ruff]
 src = ["src"]
-line-length = 88
+line-length = 120
 
 [tool.ruff.lint]
 extend-select = [
