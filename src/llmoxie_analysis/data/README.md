@@ -14,12 +14,13 @@ remains the home of the gateway and the export tooling they read:
   exported with `llmaven infra extract` from the `uw-ssec/llmoxie` repo, which
   writes a zip this package reads directly.
 
-- **`sources.py`** — normalizes a record from either export path into one
-  common shape. `from_adls` does the reshaping; `from_litellm` is a
-  pass-through, because the spend-log shape is the common format.
+- **`sources.py`** — normalizes a record from either export path into one common
+  shape. `from_adls` does the reshaping; `from_litellm` is a pass-through,
+  because the spend-log shape is the common format.
 - **`reader.py`** — flattens raw request/response records (either format) into a
   tidy per-content-block DataFrame, plus helpers for deduplicating resent
-  history and picking the longest request per session. See the docstring on each
+  history and picking the longest request per session, for working with an
+  already-loaded frame (notebooks, ad-hoc analysis). See the docstring on each
   function for details.
 - **`group_sessions.py`** — groups raw requests into full per-session
   conversations (addresses [#46](https://github.com/uw-ssec/llmoxie/issues/46)).
@@ -41,6 +42,25 @@ The input path accepts:
   `<yyyy>/<mm>/<dd>/` layout works)
 - a `.zip` of any of the above (read directly from the archive, nothing is
   extracted to disk)
+
+Which container the records arrive in does not change the result. Every input
+takes the same two-pass streaming path: one pass collects per-session stats and
+spills block rows to an intermediate Parquet, a second rebuilds each session
+from its chosen request. Memory never holds a block-level frame of the whole
+input, which matters because every request resends the conversation so far.
+
+Flags:
+
+- `--no-thinking` drops `thinking` blocks from the reconstructed conversations.
+  They are included by default.
+- `--parquet-cache PATH` keeps the intermediate Parquet (plus a
+  `PATH.stats.json` sidecar) instead of writing it to a temporary directory. A
+  later run over the same input reuses it and skips pass 1. The sidecar records
+  which input it was built from, so a changed input — or a different
+  `--no-thinking` setting — is rejected rather than silently reused.
+- `-v`/`--verbose` keeps the reader's per-record warnings, which are otherwise
+  collapsed into a single count. Useful for working out why a particular request
+  produced no content blocks.
 
 Output defaults to JSONL, one JSON object per line, one line per session:
 

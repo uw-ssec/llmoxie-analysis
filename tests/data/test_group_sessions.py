@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import zipfile
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -12,13 +13,149 @@ import pytest
 
 from llmoxie_analysis.data.group_sessions import (
     _iter_raw_records,
-    _load_all,
     _sessions_to_flat_rows,
-    build_sessions,
     main,
+    stream_sessions,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+# ── Record builders ──────────────────────────────────────────────
+# The streaming path reads raw records, so tests build records rather than
+# DataFrames. These helpers keep each test to the one field it is about.
+
+
+def _text(role: str, text: str) -> dict[str, Any]:
+    return {"role": role, "content": [{"type": "text", "text": text}]}
+
+
+def _record(
+    request_id: str,
+    session_id: str | None,
+    *,
+    messages: list[dict[str, Any]] | None = None,
+    reply: list[dict[str, Any]] | None = None,
+    start: str = "2026-03-01T00:00:00.000000Z",
+    spend: float = 0.01,
+    total_tokens: int = 100,
+) -> dict[str, Any]:
+    """One spend-log record. ``session_id=None`` omits end_user entirely."""
+    record: dict[str, Any] = {
+        "request_id": request_id,
+        "startTime": start,
+        "endTime": start,
+        "model": "claude-sonnet-4.6",
+        "spend": spend,
+        "total_tokens": total_tokens,
+        "metadata": {"user_api_key_alias": "alias"},
+        "proxy_server_request": {"messages": messages or []},
+        "response": (
+            {"choices": [{"message": {"role": "assistant", "content": reply}}]}
+            if reply is not None
+            else {}
+        ),
+    }
+    if session_id is not None:
+        record["end_user"] = json.dumps(
+            {"device_id": "d1", "account_uuid": "a1", "session_id": session_id}
+        )
+    return record
+
+
+def _conversation(session_id: str, n_turns: int) -> list[dict[str, Any]]:
+    """``n_turns`` records for one session, each resending the history so far.
+
+    Reproduces the shape the whole module exists to undo: request *i* carries
+    every message through turn *i*, so only the last one is a full transcript.
+    """
+    records = []
+    history: list[dict[str, Any]] = []
+    for i in range(n_turns):
+        history = [*history, _text("user", f"q{i}")]
+        records.append(
+            _record(
+                f"{session_id}-r{i}",
+                session_id,
+                messages=list(history),
+                reply=[{"type": "text", "text": f"a{i}"}],
+                start=f"2026-03-01T00:0{i}:00.000000Z",
+            )
+        )
+        history = [*history, _text("assistant", f"a{i}")]
+    return records
+
+
+def _to_adls(record: dict[str, Any]) -> dict[str, Any]:
+    """Re-shape a spend-log record into the ADLS blob shape sources.from_adls reads."""
+
+    def _epoch(iso: str) -> float:
+        return (
+            datetime.strptime(iso, "%Y-%m-%dT%H:%M:%S.%fZ")
+            .replace(tzinfo=UTC)
+            .timestamp()
+        )
+
+    return {
+        "kwargs": {
+            "standard_logging_object": {
+                "id": record["request_id"],
+                "startTime": _epoch(record["startTime"]),
+                "endTime": _epoch(record["endTime"]),
+                "end_user": record.get("end_user"),
+                "model": record["model"],
+                "response_cost": record["spend"],
+                "total_tokens": record["total_tokens"],
+                "metadata": {"user_api_key_alias": "alias"},
+                "messages": record["proxy_server_request"]["messages"],
+                "response": record["response"],
+            }
+        }
+    }
+
+
+# ── Input writers ────────────────────────────────────────────────
+
+
+def _write_jsonl(path: Path, records: list[dict[str, Any]]) -> Path:
+    path.write_text("".join(json.dumps(r) + "\n" for r in records))
+    return path
+
+
+def _write_json_dir(path: Path, records: list[dict[str, Any]]) -> Path:
+    """Write records as the ADLS logs/<yyyy>/<mm>/<dd>/<request_id>.json layout."""
+    day = path / "logs" / "2026" / "03" / "01"
+    day.mkdir(parents=True)
+    for record in records:
+        (day / f"{record['request_id']}.json").write_text(json.dumps(_to_adls(record)))
+    return path
+
+
+def _write_zip(path: Path, records: list[dict[str, Any]]) -> Path:
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr(
+            "litellm_spend_logs_2026-03-01.jsonl",
+            "".join(json.dumps(r) + "\n" for r in records),
+        )
+    return path
+
+
+def _sessions_by_id(
+    input_path: Path, tmp_path: Path, **kwargs: Any
+) -> dict[str, dict[str, Any]]:
+    """Run the streaming pipeline and key the result by session_id."""
+    parquet = tmp_path / f"{input_path.name}.blocks.parquet"
+    sessions, _ = stream_sessions(input_path, parquet_path=parquet, **kwargs)
+    return {s["session_id"]: s for s in sessions}
+
+
+def _transcript(session: dict[str, Any]) -> list[tuple[str, str]]:
+    """Flatten a session's messages to (role, type) pairs for terse comparison."""
+    return [
+        (m["role"], block.get("type", ""))
+        for m in session["messages"]
+        for block in m["content"]
+    ]
 
 
 class TestIterRawRecords:
@@ -119,15 +256,20 @@ class TestSessionsToFlatRows:
         assert all(r["session_id"] == "s1" and r["n_requests"] == 2 for r in rows)
 
 
-class TestBuildSessionsIntegration:
+class TestStreamSessionsIntegration:
     """Uses tests/data/fixtures/sessions.jsonl, two synthetic sessions built by
     fixtures/generate.py to reproduce the shapes that matter: resent history,
-    both end_user formats, and tool_use/tool_result pairing."""
+    both end_user formats, and tool_use/tool_result pairing.
 
-    @pytest.fixture(scope="class")
-    def sessions(self) -> dict[str, dict[str, Any]]:
-        df = _load_all(FIXTURES / "sessions.jsonl")
-        sessions, n_skipped = build_sessions(df)
+    These assertions predate the consolidation onto the streaming path, so they
+    are the guard that it preserved behavior."""
+
+    @pytest.fixture
+    def sessions(self, tmp_path: Path) -> dict[str, dict[str, Any]]:
+        parquet = tmp_path / "blocks.parquet"
+        sessions, n_skipped = stream_sessions(
+            FIXTURES / "sessions.jsonl", parquet_path=parquet
+        )
         assert n_skipped == 0  # every record in this fixture has a session_id
         return {s["session_id"]: s for s in sessions}
 
@@ -203,3 +345,209 @@ class TestMainRefusesToOverwriteOutput:
 
         # the pre-existing file must be untouched
         assert existing_output.read_text() == "not touching this\n"
+
+
+class TestInputTypeParity:
+    """The reason the two code paths were consolidated: which container the
+    records arrive in must not change the result."""
+
+    def test_jsonl_zip_and_directory_agree(self, tmp_path: Path) -> None:
+        records = _conversation("s1", 3)
+        as_jsonl = _write_jsonl(tmp_path / "logs.jsonl", records)
+        as_zip = _write_zip(tmp_path / "logs.zip", records)
+        as_dir = tmp_path / "dir"
+        as_dir.mkdir()
+        _write_jsonl(as_dir / "logs.jsonl", records)
+
+        results = [
+            _sessions_by_id(path, tmp_path) for path in (as_jsonl, as_zip, as_dir)
+        ]
+        assert results[0] == results[1] == results[2]
+
+    def test_adls_json_directory_rebuilds_the_same_conversation(
+        self, tmp_path: Path
+    ) -> None:
+        records = _conversation("s1", 3)
+        from_jsonl = _sessions_by_id(
+            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
+        )
+        from_adls = _sessions_by_id(
+            _write_json_dir(tmp_path / "adls", records), tmp_path
+        )
+
+        assert set(from_adls) == {"s1"}
+        assert from_adls["s1"]["messages"] == from_jsonl["s1"]["messages"]
+        assert from_adls["s1"]["n_requests"] == 3
+
+
+class TestThinkingBlocks:
+    @pytest.fixture
+    def records(self) -> list[dict[str, Any]]:
+        return [
+            _record(
+                "r1",
+                "s1",
+                messages=[_text("user", "q")],
+                reply=[
+                    {"type": "thinking", "thinking": "hmm"},
+                    {"type": "text", "text": "a"},
+                ],
+            )
+        ]
+
+    def test_included_by_default(
+        self, tmp_path: Path, records: list[dict[str, Any]]
+    ) -> None:
+        sessions = _sessions_by_id(
+            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
+        )
+        assert _transcript(sessions["s1"]) == [
+            ("user", "text"),
+            ("assistant", "thinking"),
+            ("assistant", "text"),
+        ]
+
+    def test_dropped_when_disabled(
+        self, tmp_path: Path, records: list[dict[str, Any]]
+    ) -> None:
+        sessions = _sessions_by_id(
+            _write_jsonl(tmp_path / "logs.jsonl", records),
+            tmp_path,
+            include_thinking=False,
+        )
+        assert _transcript(sessions["s1"]) == [("user", "text"), ("assistant", "text")]
+
+
+class TestSkippedAndEmptyRecords:
+    def test_record_without_any_session_id_is_skipped(self, tmp_path: Path) -> None:
+        # end_user missing entirely, so the parse yields "" and the native
+        # session_id fallback yields None — neither is a usable session key.
+        records = [
+            *_conversation("s1", 1),
+            _record("orphan", None, messages=[_text("user", "q")]),
+        ]
+        parquet = tmp_path / "blocks.parquet"
+        sessions, n_skipped = stream_sessions(
+            _write_jsonl(tmp_path / "logs.jsonl", records), parquet_path=parquet
+        )
+
+        assert n_skipped == 1
+        assert [s["session_id"] for s in sessions] == ["s1"]
+
+    def test_record_with_no_content_blocks_still_counts_toward_stats(
+        self, tmp_path: Path
+    ) -> None:
+        # An empty or Responses-API-shaped record yields no block rows, but it
+        # was still a billed request and must not vanish from the totals.
+        records = [
+            *_conversation("s1", 1),
+            _record("empty", "s1", spend=0.5, total_tokens=50),
+        ]
+        sessions = _sessions_by_id(
+            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
+        )
+
+        assert sessions["s1"]["n_requests"] == 2
+        assert sessions["s1"]["total_spend"] == pytest.approx(0.51)
+        assert sessions["s1"]["total_tokens"] == 150
+
+
+class TestLastRequestSelection:
+    def test_only_the_longest_request_is_reconstructed(self, tmp_path: Path) -> None:
+        # Three requests resending growing history: the transcript must be the
+        # last one's, not a concatenation of all three.
+        sessions = _sessions_by_id(
+            _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 3)), tmp_path
+        )
+
+        assert sessions["s1"]["n_requests"] == 3
+        assert _transcript(sessions["s1"]) == [
+            ("user", "text"),
+            ("assistant", "text"),
+            ("user", "text"),
+            ("assistant", "text"),
+            ("user", "text"),
+            ("assistant", "text"),
+        ]
+        texts = [b["text"] for m in sessions["s1"]["messages"] for b in m["content"]]
+        assert texts == ["q0", "a0", "q1", "a1", "q2", "a2"]
+
+
+class TestParquetCache:
+    def _argv(self, tmp_path: Path, *extra: str) -> list[str]:
+        return [
+            "group_sessions.py",
+            str(tmp_path / "logs.jsonl"),
+            "-o",
+            str(tmp_path / "out.jsonl"),
+            *extra,
+        ]
+
+    def test_no_intermediate_files_left_behind_without_the_flag(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 2))
+        monkeypatch.setattr("sys.argv", self._argv(tmp_path))
+        main()
+
+        leftovers = [
+            p.name
+            for p in tmp_path.iterdir()
+            if p.suffix == ".parquet" or p.name.endswith(".stats.json")
+        ]
+        assert leftovers == []
+        assert (tmp_path / "out.jsonl").exists()
+
+    def test_second_run_reuses_the_cache(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 2))
+        cache = tmp_path / "blocks.parquet"
+        monkeypatch.setattr(
+            "sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache))
+        )
+        main()
+        assert cache.exists()
+
+        (tmp_path / "out.jsonl").unlink()
+        with caplog.at_level(logging.INFO):
+            main()
+        assert "Reusing cached Parquet" in caplog.text
+
+    def test_cache_is_rejected_when_the_input_changed(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 2))
+        cache = tmp_path / "blocks.parquet"
+        monkeypatch.setattr(
+            "sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache))
+        )
+        main()
+
+        (tmp_path / "out.jsonl").unlink()
+        _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 4))
+        with pytest.raises(SystemExit, match="does not match"):
+            main()
+
+    def test_cache_is_rejected_when_thinking_setting_changed(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # The cached Parquet's *contents* depend on include_thinking, so
+        # reusing one built the other way would silently produce wrong output.
+        _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 2))
+        cache = tmp_path / "blocks.parquet"
+        monkeypatch.setattr(
+            "sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache))
+        )
+        main()
+
+        (tmp_path / "out.jsonl").unlink()
+        monkeypatch.setattr(
+            "sys.argv",
+            self._argv(tmp_path, "--parquet-cache", str(cache), "--no-thinking"),
+        )
+        with pytest.raises(SystemExit, match="does not match"):
+            main()

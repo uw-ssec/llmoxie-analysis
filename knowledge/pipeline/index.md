@@ -7,3 +7,4 @@
 * [Query Layer: DuckDB and Synapse Serverless](query-layer.md) - Two query engines read the same Parquet files — DuckDB for local and notebook work, Azure Synapse Serverless SQL for shared access — with one helper function as the only connection path.
 * [Source Adapters and Auto Detection](source-adapters.md) - How data/sources.py normalizes ADLS blobs and LiteLLM spend-log rows into one common record shape, and why source selection resolves per day.
 * [Storage Layout and Parquet I/O](storage-layout.md) - The single module that owns every read and write, the Hive-partitioned output path it produces, and the atomic write that makes partition overwrite safe.
+* [Session grouping runs one streaming path for every input](session-grouping-single-path.md) - The DataFrame and streaming implementations were consolidated onto stream_sessions, settling four diverged behaviors and fixing an unbounded pass 2 and a blindly-reused Parquet cache.

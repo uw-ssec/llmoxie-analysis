@@ -16,7 +16,16 @@ format produced by ``llmaven infra extract`` in the ``uw-ssec/llmoxie``
 repo), a single ``.json`` file (one request
 per file, the ADLS format from ``adl_logger.py``), a directory containing
 either (searched recursively, so nested ``<yyyy>/<mm>/<dd>/`` layouts work),
-or a ``.zip`` of them.
+or a ``.zip`` of them. The container does not change the result.
+
+Every input streams through :func:`stream_sessions`: one pass to collect
+per-session stats and spill block rows to an intermediate Parquet, a second to
+rebuild each session from its chosen request. The intermediate lives in a
+temporary directory unless ``--parquet-cache PATH`` asks to keep it, in which
+case a later run over the same input reuses it instead of rescanning.
+
+Thinking blocks are included; pass ``--no-thinking`` to drop them. Pass ``-v``
+to keep the reader's per-record warnings rather than only an aggregate count.
 
 Output defaults to JSONL, one JSON object per line, one line per session.
 Pass ``--format parquet`` for a flat table instead (one row per message
@@ -47,8 +56,10 @@ import argparse
 import io
 import json
 import logging
+import tempfile
 import zipfile
 from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any
 
@@ -58,12 +69,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from tqdm import tqdm
 
-from .reader import (
-    _parse_end_user,
-    _rows_from_record,
-    last_request_per_session,
-    load_messages_from_records,
-)
+from .reader import _parse_end_user, _rows_from_record
 from .sources import from_adls
 
 logger = logging.getLogger(__name__)
@@ -119,14 +125,6 @@ def _load_adls_json(fh: IO[bytes], name: str) -> Iterator[dict[str, Any]]:
         logger.warning("Skipping unparsable ADLS json file %s: %s", name, exc)
         return
     yield from_adls(record, Path(name).stem)
-
-
-def _load_all(input_path: Path) -> pd.DataFrame:
-    """Load every raw record under input_path into one tidy DataFrame."""
-    records = list(_iter_raw_records(input_path))
-    if not records:
-        return pd.DataFrame()
-    return load_messages_from_records(records)
 
 
 def _block_to_content(row: pd.Series) -> dict[str, Any]:
@@ -186,78 +184,6 @@ def _reconstruct_conversation(last_request_rows: pd.DataFrame) -> list[dict[str,
         messages.append(_blocks_to_message(output_rows))
 
     return messages
-
-
-def build_sessions(df: pd.DataFrame) -> tuple[list[dict[str, Any]], int]:
-    """Group a raw messages DataFrame into per-session conversation records.
-
-    Parameters
-    ----------
-    df:
-        DataFrame produced by :func:`reader.load_messages`, concatenated
-        across all input files.
-
-    Returns
-    -------
-    (sessions, n_requests_skipped)
-        ``sessions`` is a list of per-session dicts ready to serialise to
-        JSONL. ``n_requests_skipped`` is the count of requests with no
-        ``session_id`` that could not be grouped.
-    """
-    raw_input_df = df[df["direction"] == "input"]
-    n_requests_skipped = raw_input_df.loc[
-        raw_input_df["session_id"] == "", "request_id"
-    ].nunique()
-
-    # Keep the raw (non-deduped) data: last_request_per_session needs each
-    # request's own full resent history intact. deduplicate_messages would
-    # strip most of that history away, attributing each message to whichever
-    # request first introduced it rather than the request we're about to pick.
-    df = df[df["session_id"] != ""]
-    input_df = df[df["direction"] == "input"]
-
-    per_request = input_df.drop_duplicates(subset=["session_id", "request_id"])
-    stats = per_request.groupby("session_id").agg(
-        device_id=("device_id", "first"),
-        account_uuid=("account_uuid", "first"),
-        user_api_key_alias=("user_api_key_alias", "first"),
-        n_requests=("request_id", "nunique"),
-        total_spend=("spend", "sum"),
-        total_tokens=("total_tokens", "sum"),
-        start_time=("start_time", "min"),
-        end_time=("end_time", "max"),
-    )
-    models = per_request.groupby("session_id")["model"].apply(
-        lambda s: sorted(set(s.dropna()))
-    )
-
-    last_df = last_request_per_session(df)
-
-    sessions: list[dict[str, Any]] = []
-    for session_id, group in last_df.groupby("session_id"):
-        row = stats.loc[session_id]
-        sessions.append(
-            {
-                "session_id": session_id,
-                "device_id": row["device_id"],
-                "account_uuid": row["account_uuid"],
-                "user_api_key_alias": row["user_api_key_alias"],
-                "models": models.loc[session_id],
-                "n_requests": int(row["n_requests"]),
-                "total_spend": float(row["total_spend"])
-                if pd.notna(row["total_spend"])
-                else None,
-                "total_tokens": int(row["total_tokens"])
-                if pd.notna(row["total_tokens"])
-                else None,
-                "start_time": row["start_time"],
-                "end_time": row["end_time"],
-                "messages": _reconstruct_conversation(group),
-            }
-        )
-
-    sessions.sort(key=lambda s: s["start_time"] or "")
-    return sessions, int(n_requests_skipped)
 
 
 def _sessions_to_flat_rows(sessions: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -344,10 +270,26 @@ _PARQUET_SCHEMA = pa.schema(
 _PARQUET_BATCH_SIZE = 10_000
 
 
-def _stream_to_parquet(
+@dataclass(frozen=True)
+class ScanResult:
+    """What pass 1 learned: everything about a session except its messages."""
+
+    session_stats: dict[str, dict[str, Any]]
+    n_skipped: int
+
+    @property
+    def last_request_ids(self) -> set[str]:
+        """The request_id chosen as each session's full transcript."""
+        return {s["_best_request_id"] for s in self.session_stats.values()}
+
+
+def _scan_and_write_blocks(
     input_path: Path,
     parquet_path: Path,
-) -> tuple[dict[str, dict[str, Any]], set[str], int]:
+    *,
+    include_thinking: bool,
+    verbose: bool,
+) -> ScanResult:
     """Stream all records from input_path into a compact Parquet file.
 
     Accumulates per-session stats in memory (O(n_sessions)) without building a
@@ -355,13 +297,10 @@ def _stream_to_parquet(
     reconstruction to the Parquet — all other columns go into the returned
     session_stats dict.
 
-    Returns
-    -------
-    (session_stats, last_request_ids, n_skipped)
-        session_stats maps session_id → aggregated stats dict.
-        last_request_ids is the set of request_ids that are the "last" (longest
-        input history, tie-broken by start_time) for their session.
-        n_skipped is the count of records with an unparsable session_id.
+    Stats are accumulated from the raw record *before* it is flattened, so a
+    record that yields no content blocks (an empty message list, or a
+    Responses-API reply the reader cannot parse) still counts toward its
+    session's n_requests, spend and tokens.
     """
     session_stats: dict[str, dict[str, Any]] = {}
     n_skipped = 0
@@ -379,12 +318,14 @@ def _stream_to_parquet(
         writer.write_table(table)
         batch = []
 
-    # Suppress per-record reader warnings during streaming; count and report in aggregate.
-    # Use __module__ rather than a hard-coded name so it works regardless of how the
-    # package was imported (e.g. 'llmaven.data.reader' vs 'src.llmaven.data.reader').
+    # Suppress per-record reader warnings during streaming; count and report in
+    # aggregate.  -v/--verbose keeps them, for working out why a particular
+    # request produced nothing.  Use __module__ rather than a hard-coded name so
+    # it works regardless of how the package was imported.
     _reader_logger = logging.getLogger(_rows_from_record.__module__)
     _saved_level = _reader_logger.level
-    _reader_logger.setLevel(logging.ERROR)
+    if not verbose:
+        _reader_logger.setLevel(logging.ERROR)
     try:
         for record in tqdm(
             _iter_raw_records(input_path), unit="rec", desc="Pass 1: scanning"
@@ -443,7 +384,7 @@ def _stream_to_parquet(
                     s["_best_start_time"] = start_time
 
             block_rows = _rows_from_record(
-                record, include_thinking=True, include_tool_use=True
+                record, include_thinking=include_thinking, include_tool_use=True
             )
             if not block_rows:
                 n_no_content += 1
@@ -464,8 +405,7 @@ def _stream_to_parquet(
             n_no_content,
         )
 
-    last_request_ids = {s["_best_request_id"] for s in session_stats.values()}
-    return session_stats, last_request_ids, n_skipped
+    return ScanResult(session_stats=session_stats, n_skipped=n_skipped)
 
 
 def _build_sessions_from_parquet(
@@ -475,11 +415,17 @@ def _build_sessions_from_parquet(
 ) -> list[dict[str, Any]]:
     """Read the block Parquet, reconstruct one session record per session_id.
 
-    Filters to last-request rows in memory, then calls _reconstruct_conversation
-    for each session and merges with the pre-computed session_stats.
+    The request_id filter is pushed down into PyArrow rather than applied to a
+    fully-loaded frame, so only the chosen requests' rows are materialised.
+    Row-group *pruning* does not help here (request ids are UUIDs, so per-group
+    min/max statistics span everything), but the predicate is still evaluated a
+    row group at a time, which keeps peak memory at roughly the output size
+    instead of every block row of every resent request.
     """
-    df = pd.read_parquet(parquet_path)
-    df = df[df["request_id"].isin(last_request_ids)]
+    df = pd.read_parquet(
+        parquet_path,
+        filters=[("request_id", "in", list(last_request_ids))],
+    )
 
     sessions: list[dict[str, Any]] = []
     for session_id, group in tqdm(
@@ -509,6 +455,130 @@ def _build_sessions_from_parquet(
 
     sessions.sort(key=lambda s: s["start_time"] or "")
     return sessions
+
+
+def _cache_fingerprint(input_path: Path, *, include_thinking: bool) -> dict[str, Any]:
+    """Identify the input a cached Parquet was built from.
+
+    Nothing else ties a cache to its input, and because the tool refuses to
+    overwrite its output, the natural way to re-run is to delete the output and
+    reuse the same paths — which would otherwise silently reuse a stale cache.
+
+    ``include_thinking`` is part of the fingerprint because it changes the
+    Parquet's *contents*, not just the run: reusing a no-thinking cache for a
+    thinking run would quietly produce a transcript missing its thinking blocks.
+    """
+    if input_path.is_dir():
+        files = [
+            p
+            for p in input_path.rglob("*")
+            if p.suffix in (".jsonl", ".json") and p.is_file()
+        ]
+        size = len(files)
+        mtime_ns = max((p.stat().st_mtime_ns for p in files), default=0)
+    else:
+        stat = input_path.stat()
+        size = stat.st_size
+        mtime_ns = stat.st_mtime_ns
+    return {
+        "path": str(input_path.resolve()),
+        "size": size,
+        "mtime_ns": mtime_ns,
+        "include_thinking": include_thinking,
+    }
+
+
+def stream_sessions(
+    input_path: Path,
+    *,
+    parquet_path: Path,
+    include_thinking: bool = True,
+    verbose: bool = False,
+) -> tuple[list[dict[str, Any]], int]:
+    """Group every raw record under input_path into per-session conversations.
+
+    Two passes. Pass 1 scans the records once, accumulating per-session stats in
+    memory (O(n_sessions)) and spilling block rows to ``parquet_path``. Pass 2
+    reads back only the rows of each session's chosen request and rebuilds its
+    conversation. Memory never holds a block-level frame of the whole input,
+    which matters because every request resends the conversation so far.
+
+    ``input_path`` may be a ``.jsonl``, a ``.json``, a directory of either, or a
+    ``.zip`` — the container is handled by :func:`_iter_raw_records` and does
+    not change the result.
+
+    If ``parquet_path`` already exists it is reused, provided its sidecar says
+    it was built from this same input with the same ``include_thinking``.
+
+    Returns
+    -------
+    (sessions, n_skipped)
+        ``n_skipped`` counts records whose session_id was missing or
+        unparsable, so they could not be grouped.
+    """
+    stats_path = parquet_path.with_suffix(parquet_path.suffix + ".stats.json")
+    fingerprint = _cache_fingerprint(input_path, include_thinking=include_thinking)
+
+    if parquet_path.exists():
+        if not stats_path.exists():
+            msg = (
+                f"Parquet cache found at {parquet_path} but sidecar "
+                f"{stats_path} is missing"
+            )
+            raise SystemExit(msg)
+        with stats_path.open() as f:
+            raw_stats = json.load(f)
+        cached = raw_stats.get("fingerprint")
+        if cached != fingerprint:
+            differing = sorted(
+                k for k in fingerprint if not cached or cached.get(k) != fingerprint[k]
+            )
+            msg = (
+                f"Parquet cache at {parquet_path} does not match this input "
+                f"(differs on: {', '.join(differing)}). Delete it to rebuild."
+            )
+            raise SystemExit(msg)
+        logger.info("Reusing cached Parquet at %s", parquet_path)
+        scan = ScanResult(
+            session_stats={
+                sid: {**s, "models": set(s["models"])}
+                for sid, s in raw_stats["sessions"].items()
+            },
+            n_skipped=raw_stats.get("n_skipped", 0),
+        )
+    else:
+        scan = _scan_and_write_blocks(
+            input_path,
+            parquet_path,
+            include_thinking=include_thinking,
+            verbose=verbose,
+        )
+        with stats_path.open("w") as f:
+            json.dump(
+                {
+                    "fingerprint": fingerprint,
+                    "n_skipped": scan.n_skipped,
+                    "sessions": {
+                        sid: {**s, "models": sorted(s["models"])}
+                        for sid, s in scan.session_stats.items()
+                    },
+                },
+                f,
+            )
+        logger.info("Saved Parquet at %s", parquet_path)
+
+    logger.info("Scanning complete: %d sessions found", len(scan.session_stats))
+    if not scan.session_stats:
+        msg = (
+            "No sessions found — all records had an unparsable or missing "
+            f"end_user field. ({scan.n_skipped} records skipped)"
+        )
+        raise SystemExit(msg)
+
+    sessions = _build_sessions_from_parquet(
+        parquet_path, scan.session_stats, scan.last_request_ids
+    )
+    return sessions, scan.n_skipped
 
 
 def main() -> None:
@@ -545,11 +615,22 @@ def main() -> None:
         default=None,
         metavar="PATH",
         help=(
-            "Path for the intermediate block Parquet kept after pass 1 "
-            "(default: <output>.blocks.parquet).  If the file already exists, "
-            "pass 1 is skipped and the cached Parquet is reused "
-            "(a <PATH>.stats.json sidecar must also exist)."
+            "Keep the intermediate block Parquet at PATH instead of in a "
+            "temporary directory.  If the file already exists and was built "
+            "from this same input, pass 1 is skipped and it is reused."
         ),
+    )
+    parser.add_argument(
+        "--no-thinking",
+        action="store_false",
+        dest="include_thinking",
+        help="Drop thinking blocks from the reconstructed conversations",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Keep the reader's per-record warnings instead of only an aggregate count",
     )
     args = parser.parse_args()
     output = args.output or Path(f"sessions.{args.format}")
@@ -557,62 +638,13 @@ def main() -> None:
         msg = f"{output} already exists, pass a different -o/--output to avoid overwriting it"
         raise SystemExit(msg)
 
-    use_streaming = args.input.suffix == ".jsonl"
-
-    if use_streaming:
-        parquet_path = args.parquet_cache or output.with_suffix(".blocks.parquet")
-        stats_path = parquet_path.with_suffix(parquet_path.suffix + ".stats.json")
-
-        if parquet_path.exists():
-            if not stats_path.exists():
-                msg = (
-                    f"Parquet cache found at {parquet_path} but sidecar "
-                    f"{stats_path} is missing"
-                )
-                raise SystemExit(msg)
-            logger.info("Reusing cached Parquet at %s", parquet_path)
-            with stats_path.open() as f:
-                raw_stats = json.load(f)
-            session_stats = {
-                sid: {**s, "models": set(s["models"])}
-                for sid, s in raw_stats["sessions"].items()
-            }
-            last_request_ids = {s["_best_request_id"] for s in session_stats.values()}
-            n_skipped = raw_stats.get("n_skipped", 0)
-        else:
-            session_stats, last_request_ids, n_skipped = _stream_to_parquet(
-                args.input, parquet_path
-            )
-            serialisable = {
-                "n_skipped": n_skipped,
-                "sessions": {
-                    sid: {**s, "models": sorted(s["models"])}
-                    for sid, s in session_stats.items()
-                },
-            }
-            with stats_path.open("w") as f:
-                json.dump(serialisable, f)
-            logger.info("Saved Parquet at %s", parquet_path)
-
-        logger.info("Scanning complete: %d sessions found", len(session_stats))
-        if not session_stats:
-            msg = (
-                "No sessions found — all records had an unparsable or missing "
-                f"end_user field. ({n_skipped} records skipped)"
-            )
-            raise SystemExit(msg)
-
-        sessions = _build_sessions_from_parquet(
-            parquet_path, session_stats, last_request_ids
+    with tempfile.TemporaryDirectory() as tmp:
+        sessions, n_skipped = stream_sessions(
+            args.input,
+            parquet_path=args.parquet_cache or Path(tmp) / "blocks.parquet",
+            include_thinking=args.include_thinking,
+            verbose=args.verbose,
         )
-    else:
-        df = _load_all(args.input)
-        if df.empty:
-            msg = f"No records found at {args.input}"
-            raise SystemExit(msg)
-        n_requests = df.loc[df["direction"] == "input", "request_id"].nunique()
-        logger.info("Loaded %d requests from %s", n_requests, args.input)
-        sessions, n_skipped = build_sessions(df)
 
     if args.format == "jsonl":
         with jsonlines.open(output, mode="w") as writer:
@@ -624,7 +656,7 @@ def main() -> None:
     logger.info("Wrote %d sessions to %s", len(sessions), output)
     if n_skipped:
         logger.info(
-            "Skipped %d requests with no session_id (could not be grouped)", n_skipped
+            "Skipped %d records with no session_id (could not be grouped)", n_skipped
         )
 
 

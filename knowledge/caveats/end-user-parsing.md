@@ -44,8 +44,13 @@ send different things.
 !!! danger "About 25% of Jan–Mar 2026 requests have no usable session_id"
 
     Those requests are not merely mislabeled. They are **dropped** from session
-    grouping entirely: `build_sessions` filters on `session_id == ""` and
-    counts them out.
+    grouping entirely: the scan skips any record with no usable session_id
+    (`if not session_id`) and counts it out.
+
+    The removed `build_sessions` filtered on `session_id == ""`, which let a
+    `None` from the native-`session_id` fallback through as a session key. The
+    streaming check catches both, so the skip count is now slightly higher and
+    no `None`-keyed session can appear in the output.
 
 Two consequences follow immediately.
 
@@ -107,10 +112,13 @@ fallback, and report the fallback share next to every session count.
 ## What the pipeline must do about it
 
 Issue #1 makes this a hard requirement: **every pipeline run must log
-`skipped_session_count`**. The prototype already computes it as the second
-element of `build_sessions`'s return tuple (see
+`skipped_session_count`**. Session grouping already computes it as the second
+element of `stream_sessions`'s return tuple (see
 [[upstream/session-reconstruction]]); the production run statistics must surface
 it rather than discard it.
+
+Note the unit: it counts skipped **records**, not distinct `request_id`s as the
+removed `build_sessions` did.
 
 The figure belongs in `PipelineRunStats` and in any report built on the output.
 A session count published without its companion skip count is incomplete.
