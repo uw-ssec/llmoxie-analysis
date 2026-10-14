@@ -4,13 +4,20 @@ title: group_sessions.py — Reconstructing Conversations
 description: "The upstream prototype that groups flat request rows into per-session conversations, its DataFrame and streaming code paths, and the specific behaviors this project must preserve."
 tags: [sessions, grouping, prototype, upstream, pr-151, pr-167, streaming, parquet]
 generated: { by: "opencode:qwen3.8-27b-oq4e-mtp", at: "2026-09-20T06:06:47Z" }
-code_refs: [reference/llmoxie/src/llmaven/data/group_sessions.py, reference/llmoxie/src/llmaven/data/README.md]
+code_refs: [src/llmoxie_analysis/data/group_sessions.py, src/llmoxie_analysis/data/README.md, reference/llmoxie/src/llmaven/data/group_sessions.py]
 sources:
   - resource: reference/llmoxie/src/llmaven/data/group_sessions.py (673 lines)
   - resource: "reference/llmoxie commit ec5d8b2, PR #151, 2026-09-11"
   - resource: "reference/llmoxie commit 3e9a694, PR #167, 2026-09-18"
   - resource: reference/llmoxie/src/llmaven/data/README.md
 ---
+
+!!! note "This code now lives in `src/`"
+
+    These modules were moved into `src/llmoxie_analysis/data/` from
+    `uw-ssec/llmoxie`. They were lifted, not rewritten, so everything below
+    still describes live behavior — read "upstream" here as where the code
+    came from, not where it is. See [[project/current-state]].
 
 Landed 2026-09-11 in commit `ec5d8b2` (PR #151) and reworked a week later in
 `3e9a694` (PR #167, 2026-09-18), this is the newest and least settled piece of

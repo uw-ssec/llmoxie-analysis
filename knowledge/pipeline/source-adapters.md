@@ -4,6 +4,7 @@ title: Source Adapters and Auto Detection
 description: "How data/sources.py normalizes ADLS blobs and LiteLLM spend-log rows into one common record shape, and why source selection resolves per day."
 tags: [adapters, sources, normalization, auto-detection, stage-1]
 status: draft
+code_refs: [src/llmoxie_analysis/data/sources.py]
 sources:
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/1
   - resource: https://github.com/uw-ssec/llmoxie-analysis/issues/3
@@ -13,6 +14,14 @@ generated: { by: "claude-code:claude-opus-5", at: "2026-09-18T15:01:08Z" }
 `data/sources.py` (issue #3 of [[project/epic-and-issues]]) is the boundary that
 keeps the rest of the pipeline from knowing which of the
 [[platform/logging-paths]] a record came from.
+
+!!! note "Half of this is now built"
+
+    `from_adls` and `from_litellm` exist in `src/llmoxie_analysis/data/sources.py`,
+    extracted from the prototype when it moved in, and the identical-output
+    requirement below is covered by `TestAdapterParity` in
+    `tests/data/test_sources.py`. `iter_source` and the per-day auto detection
+    are still unbuilt, which is why this concept stays `draft`.
 
 ## Interface
 

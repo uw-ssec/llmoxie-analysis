@@ -1,67 +1,61 @@
 ---
 type: Fact
 title: What Exists and What Is Only Designed
-description: "The analysis package is still empty scaffolding: pipeline/ records decisions for code that has not been written, and the working prototypes live in the reference/ submodules."
+description: "Stage one of the pipeline now exists in src/ — sources, reader and session grouping — while everything downstream of it under pipeline/ is still specification, not code."
 tags: [status, scaffolding, onboarding, implementation]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T05:48:34Z" }
+generated: { by: "claude-code:ssec-claude-opus-5", at: "2026-10-13T21:33:03Z" }
 sources:
   - resource: llmoxie-analysis repository tree at commit 890d695
   - resource: "https://github.com/uw-ssec/llmoxie-analysis/issues/1"
 ---
 
-Most of this bundle describes a system that has not been built yet. Read
-`pipeline/` as a specification, not as documentation of running code.
+Much of this bundle still describes a system that has not been built. Read
+`pipeline/` as a specification except where noted below.
 
 ## What exists today
 
 | Area              | State                                                                |
 | ----------------- | -------------------------------------------------------------------- |
-| `src/`            | `llmoxie_analysis/__init__.py` only — a docstring and `__version__`  |
-| `tests/`          | `test_version.py` only — asserts the version string                  |
+| `src/`            | `llmoxie_analysis/data/`: `sources.py`, `reader.py`, `group_sessions.py` — stage one, moved in from upstream |
+| `tests/`          | `test_version.py` plus `tests/data/`: 48 tests over the three data modules |
 | `evals/`          | Skill evals: Inspect harness and samples, Harbor base image and 18 tasks; merged in PR #42 |
 | `knowledge/`      | This bundle                                                          |
 | `.claude/skills/` | The core-loop skills: setup-env, run-tests, verify, commit, push, create-pr, create-issue, merge-pr, release, docs, clean-branches, okf-memory |
-| `reference/`      | Git submodules: `llmoxie` (the upstream prototypes) and `ceil-dlp`   |
+| `reference/`      | Git submodules: `llmoxie` (the upstream repo) and `ceil-dlp`         |
 | Repository        | Packaging, CI, pre-commit, AI policy, contribution rules             |
-
-So the repository is scaffolding plus knowledge, and the analysis package
-itself is empty.
 
 ## What is designed but not built
 
-Everything under `pipeline/` — the four-stage architecture, the four-table
-analytics schema, the storage layout, the idempotency design, the CLI, the
-query layer, and the scheduled Container Apps job. These concepts record
-decisions already taken, so they are worth reading before writing code, but no
-code implements them yet.
+Everything under `pipeline/` except the adapters: the four-table analytics
+schema, the storage layout, the idempotency design, the CLI, the query layer,
+and the scheduled Container Apps job. These concepts record decisions already
+taken, so they are worth reading before writing code, but no code implements
+them yet.
 
-Each carries `status: draft` to mark that. Flip a concept to `status: stable`
-when the code implementing it lands.
+[[pipeline/source-adapters]] is the partial exception — `from_adls` and
+`from_litellm` exist; `iter_source` and its per-day auto detection do not.
 
 ## Where the working code actually is
 
-The `llmaven` CLI and the `reader.py` / `group_sessions.py` prototypes that
-`upstream/` describes live in the `reference/llmoxie` submodule, not in this
-repository. They are the inherited prototypes this project must fix or absorb;
-`upstream/` records what they do and where they are wrong. Do not expect to
-find them under `src/`, and do not edit the submodule as a way of changing this
-project.
+The `reader.py` and `group_sessions.py` prototypes that `upstream/` describes
+now live in this repository, under `src/llmoxie_analysis/data/`. They were moved
+out of `uw-ssec/llmoxie` rather than rewritten, so `upstream/` still describes
+their behavior accurately — read it as documentation of the code in `src/`, and
+treat its "upstream" framing as history.
+
+`reference/llmoxie` remains the home of the gateway, the infrastructure code and
+the `llmaven infra extract` export tool. Do not edit the submodule as a way of
+changing this project.
+
+Still true of the moved code: it was lifted, not fixed. The caveats under
+`caveats/` describe live behavior, not past behavior.
 
 ## How to tell, without trusting this page
 
 This concept will go stale as code lands. The checks that will not:
 
 ```bash
-find src -name '*.py'        # what the package actually contains
+find src -name "*.py"        # what the package actually contains
 pixi run run-tests           # what is actually covered
 okf show pipeline/<concept>  # status: draft vs stable
 ```
-
-## Related Concepts
-
-- [Epic #1 and the Implementation Issues](epic-and-issues.md): The issue-by-issue
-  plan that turns the designed half into the built half.
-- [Pipeline Architecture](../pipeline/pipeline-architecture.md): The principal
-  design this concept is warning you is unbuilt.
-- [Skill Evaluation with Inspect and Harbor](skill-evals.md): The one part of
-  the repository that is built, tested and merged.

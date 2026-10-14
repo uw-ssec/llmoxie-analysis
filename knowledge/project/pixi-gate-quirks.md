@@ -3,7 +3,7 @@ type: Fact
 title: Pixi Task and Verify Gate Quirks
 description: "Undocumented behaviour of pixi tasks, the verify gate, pre-commit and Docker on this machine that cost time: the task shell's cp semantics, argument placeholders, cross-environment dependencies, piped exit codes, and config-staging refusals."
 tags: [pixi, verify, pre-commit, docker, ci]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T05:49:02Z" }
+generated: { by: "claude-code:ssec-claude-opus-5", at: "2026-10-13T21:33:59Z" }
 governance: context
 code_refs: [pixi.toml, .pre-commit-config.yaml, ".github/workflows/**"]
 sources:
@@ -55,6 +55,22 @@ documentation and cost time during the skill-evals work (2026-09-18 and
 - **`mkdocs build --strict` fails on any page under `docs/` that is not in
   `nav`**; `docs-build` is not part of `verify`, so this surfaces late.
   `docs/superpowers/` is excluded with `exclude_docs`.
+
+## mypy under strict, with scientific dependencies
+
+- **mypy's `python_version` floor collides with installed stubs.** The config
+  pins `python_version = "3.11"` (the package's minimum) while the pixi
+  environment resolves Python 3.14. The moment `pyarrow` landed, mypy failed
+  with a *syntax* error inside `numpy/__init__.pyi` — numpy's stubs use `type`
+  statements, which are not valid under a 3.11 target. `ignore_missing_imports`
+  does not help: the file parses before any error filtering. The fix is
+  `follow_imports = "skip"` on `["numpy.*", "pyarrow.*"]`, which keeps the 3.11
+  floor meaningful for first-party code. Expect the same from any other typed
+  dependency that ships modern stubs.
+- **`ignore_missing_imports` is the right tool for the untyped half.**
+  `jsonlines`, `tqdm` and `pandas` ship no usable stubs; `pandas-stubs` was
+  considered and rejected, since it turns every DataFrame chain in `reader.py`
+  into an error for no correctness gain.
 
 ## Docker on this machine
 

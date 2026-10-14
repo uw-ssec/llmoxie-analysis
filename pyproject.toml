@@ -21,7 +21,12 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
 ]
-dependencies = []
+dependencies = [
+    "jsonlines>=4.0",
+    "pandas>=2.0",
+    "pyarrow>=14",
+    "tqdm>=4.66",
+]
 
 [project.urls]
 Homepage = "https://github.com/uw-ssec/llmoxie-analysis"
@@ -82,3 +87,20 @@ python_version = "3.11"
 strict = true
 warn_unreachable = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+
+# None of the pipeline's runtime dependencies ship type information that
+# survives strict mode: jsonlines, tqdm and pyarrow have no stubs at all, and
+# pandas-stubs makes every DataFrame chain in reader.py an error for no
+# correctness gain. Untyped imports only.
+[[tool.mypy.overrides]]
+module = ["jsonlines.*", "tqdm.*", "pandas.*", "pyarrow.*"]
+ignore_missing_imports = true
+
+# pyarrow is typed and pulls numpy in with it. numpy's own stubs use `type`
+# statements, which are a syntax error under `python_version = "3.11"` (the
+# minimum this package supports) even though the environment runs 3.14. Nothing
+# here imports numpy directly, so skip it rather than relax the version floor.
+[[tool.mypy.overrides]]
+module = ["numpy.*", "pyarrow.*"]
+follow_imports = "skip"
+follow_imports_for_stubs = true

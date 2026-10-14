@@ -1,3 +1,10 @@
+## 2026-10-13
+* **Update**: Updated concept `project/pixi-gate-quirks.md`.
+* **Update**: Updated concept `project/current-state.md`.
+* **Update**: Linked `datasets/synthetic-test-fixture.md` to `upstream/session-reconstruction.md` (The prototype whose integration tests this fixture replaces.).
+* **Update**: Linked `datasets/synthetic-test-fixture.md` to `datasets/pii-handling.md` (The rule that forbade committing the real fixture, and the reason this one is fabricated.).
+* **Creation**: Documented concept `datasets/synthetic-test-fixture.md` (The Integration Fixture Is Synthetic, By Design).
+
 ## 2026-09-23
 * **Update**: Linked `project/codespaces-prebuild.md` to `project/pixi-gate-quirks.md` (The prebuild bakes all three pixi environments, so the pixi gate quirks apply to what a prebuilt codespace ships with).
 * **Update**: Updated concept `project/codespaces-prebuild.md`.

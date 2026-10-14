@@ -4,11 +4,18 @@ title: reader.py — Flattening Requests to Message Blocks
 description: "The upstream module that explodes each gateway request into one row per content block, including the end_user parsing that session identity depends on."
 tags: [reader, flattening, pandas, upstream, dataframe]
 generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T00:10:18Z" }
-code_refs: [reference/llmoxie/src/llmaven/data/reader.py]
+code_refs: [src/llmoxie_analysis/data/reader.py, reference/llmoxie/src/llmaven/data/reader.py]
 sources:
   - resource: reference/llmoxie/src/llmaven/data/reader.py (440 lines)
   - resource: "reference/llmoxie commit 3e9a694, PR #167, 2026-09-18"
 ---
+
+!!! note "This code now lives in `src/`"
+
+    These modules were moved into `src/llmoxie_analysis/data/` from
+    `uw-ssec/llmoxie`. They were lifted, not rewritten, so everything below
+    still describes live behavior — read "upstream" here as where the code
+    came from, not where it is. See [[project/current-state]].
 
 `src/llmaven/data/reader.py` in the upstream repo is the layer that turns a
 LiteLLM spend-log record into a tabular DataFrame — one row per _content block_,
