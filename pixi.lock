@@ -3551,7 +3551,7 @@ packages:
 - pypi: ./
   name: llmoxie-analysis
   version: 0.1.0
-  sha256: 991c6187ed80bb604dfee03aa8e4f432420d81d893c8cff3a4c56410674e324b
+  sha256: 5a747e1bc00f4173be6d9b6d61d3a341c34b152ed0b204e30f9051f594872f2b
   requires_dist:
   - jsonlines>=4.0
   - pandas>=2.0
