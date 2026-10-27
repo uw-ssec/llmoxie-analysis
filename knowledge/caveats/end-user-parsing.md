@@ -3,7 +3,7 @@ type: Fact
 title: "Caveat: end_user Parsing Fragility"
 description: "Session identity is recovered by parsing a free-form client-supplied string, and roughly a quarter of early-2026 requests cannot be parsed at all."
 tags: [caveat, data-quality, sessions, end-user, coverage]
-generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T00:11:08Z" }
+generated: { by: "claude-code:ssec-claude-opus-5", at: "2026-10-27T19:14:19Z" }
 governance: constraint
 code_refs: [reference/llmoxie/src/llmaven/data/reader.py, reference/llmoxie/src/llmaven/data/group_sessions.py, "src/llmoxie_analysis/**"]
 sources:
@@ -51,6 +51,25 @@ send different things.
     `None` from the native-`session_id` fallback through as a session key. The
     streaming check catches both, so the skip count is now slightly higher and
     no `None`-keyed session can appear in the output.
+
+## The native-`session_id` fallback is gone (2026-10-27)
+
+Both `_base_row` in [[upstream/reader-flattening]] and the streaming scan used
+to key on `eu["session_id"] or record.get("session_id")`. That fallback was
+never a recovery mechanism: LiteLLM mints the top-level `session_id` fresh per
+request (13,221 distinct values across 13,291 Jan–Mar records), so it groups
+nothing and instead fabricates one singleton "session" per ungroupable record.
+
+`end_user` is now the only source of session identity, and the reader writes
+`""` for a record it cannot parse. The drops are no longer a bare count:
+`stream_sessions` returns a `SkipStats` carrying the record count, the spend
+and tokens those records take with them — which is exactly the reconciliation
+gap described below — plus how many carried a native per-request id and how
+many parsed to an account but no session.
+
+The cache fingerprint gained a `grouping_schema` key (now `2`) so a Parquet
+sidecar built under the old fallback is rejected rather than reused; a stale
+one would quietly reinstate the fabricated singletons.
 
 Two consequences follow immediately.
 

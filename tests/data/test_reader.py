@@ -245,7 +245,10 @@ class TestLoadMessagesFromRecords:
         df = load_messages_from_records([record])
         assert df.iloc[0]["session_id"] == "11111111-1111-1111-1111-111111111111"
 
-    def test_top_level_session_id_used_when_end_user_empty(self) -> None:
+    def test_top_level_session_id_is_never_used_as_a_session_key(self) -> None:
+        # LiteLLM mints a fresh top-level session_id per request, so falling
+        # back to it would turn every unparsable record into its own singleton
+        # "session". An empty string marks the record as ungroupable instead.
         record = {
             "request_id": "r1",
             "session_id": "top-level-uuid",
@@ -255,7 +258,7 @@ class TestLoadMessagesFromRecords:
             "response": {},
         }
         df = load_messages_from_records([record])
-        assert df.iloc[0]["session_id"] == "top-level-uuid"
+        assert df.iloc[0]["session_id"] == ""
 
     def test_no_input_or_output_logs_warning(self, caplog: pytest.LogCaptureFixture) -> None:
         record = {"request_id": "r1"}

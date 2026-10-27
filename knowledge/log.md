@@ -1,3 +1,7 @@
+## 2026-10-27
+* **Update**: Updated concept `pipeline/session-grouping-single-path.md`.
+* **Update**: Updated concept `caveats/end-user-parsing.md`.
+
 ## 2026-10-14
 * **Update**: Linked `pipeline/session-grouping-single-path.md` to `caveats/cost-token-double-counting.md` (Empty records now counted in the spend and token sums this caveat is about.).
 * **Update**: Linked `pipeline/session-grouping-single-path.md` to `caveats/end-user-parsing.md` (The skip count this decision redefined from distinct request_ids to records.).

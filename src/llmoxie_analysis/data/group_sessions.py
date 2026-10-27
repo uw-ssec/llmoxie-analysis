@@ -59,7 +59,7 @@ import logging
 import tempfile
 import zipfile
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import IO, Any
 
@@ -235,13 +235,54 @@ _PARQUET_COLS = tuple(_PARQUET_SCHEMA.names)
 
 _PARQUET_BATCH_SIZE = 10_000
 
+# Bumped whenever a change alters what pass 1 records in the sidecar. The cache
+# fingerprint carries it, so a stale cache is rejected rather than reused.
+# 2: dropped the native-session_id fallback, so caches built under 1 hold
+# fabricated singleton sessions; added SkipStats in place of a bare count.
+_GROUPING_SCHEMA = 2
+
+
+@dataclass
+class SkipStats:
+    """Records pass 1 dropped because ``end_user`` carried no session_id.
+
+    Session totals are computed over the records that survived, so they do not
+    reconcile with request-level totals taken from the same input. The
+    difference is exactly ``spend``/``total_tokens`` here, which is why the
+    dropped volume is accumulated rather than only counted.
+
+    ``n_with_native_session_id`` is the subset LiteLLM stamped with a
+    per-request trace id. Grouping once used that id as a fallback key, which
+    turned each of these into a singleton "session"; the field now measures how
+    much that fallback was inflating the output.
+
+    ``n_with_account_uuid`` is the subset whose ``end_user`` parsed far enough
+    to name an account but not a session — ungroupable, yet still attributable.
+    """
+
+    n_records: int = 0
+    spend: float = 0.0
+    total_tokens: int = 0
+    n_with_native_session_id: int = 0
+    n_with_account_uuid: int = 0
+
+    def record(self, record: dict[str, Any], end_user: dict[str, str]) -> None:
+        """Count one dropped record and the volume it takes with it."""
+        self.n_records += 1
+        self.spend += record.get("spend") or 0.0
+        self.total_tokens += record.get("total_tokens") or 0
+        if record.get("session_id"):
+            self.n_with_native_session_id += 1
+        if end_user["account_uuid"]:
+            self.n_with_account_uuid += 1
+
 
 @dataclass(frozen=True)
 class ScanResult:
     """What pass 1 learned: everything about a session except its messages."""
 
     session_stats: dict[str, dict[str, Any]]
-    n_skipped: int
+    skipped: SkipStats
 
     @property
     def last_request_ids(self) -> set[str]:
@@ -269,7 +310,7 @@ def _scan_and_write_blocks(
     session's n_requests, spend and tokens.
     """
     session_stats: dict[str, dict[str, Any]] = {}
-    n_skipped = 0
+    skipped = SkipStats()
     n_no_content = 0
 
     writer = pq.ParquetWriter(parquet_path, _PARQUET_SCHEMA, compression="snappy")
@@ -293,10 +334,10 @@ def _scan_and_write_blocks(
     try:
         for record in tqdm(_iter_raw_records(input_path), unit="rec", desc="Pass 1: scanning"):
             eu = _parse_end_user(record.get("end_user"))
-            session_id = eu["session_id"] or record.get("session_id")
+            session_id = eu["session_id"]
 
             if not session_id:
-                n_skipped += 1
+                skipped.record(record, eu)
                 continue
 
             request_id = record.get("request_id") or ""
@@ -370,7 +411,7 @@ def _scan_and_write_blocks(
             n_no_content,
         )
 
-    return ScanResult(session_stats=session_stats, n_skipped=n_skipped)
+    return ScanResult(session_stats=session_stats, skipped=skipped)
 
 
 def _build_sessions_from_parquet(
@@ -446,6 +487,7 @@ def _cache_fingerprint(input_path: Path, *, include_thinking: bool) -> dict[str,
         "size": size,
         "mtime_ns": mtime_ns,
         "include_thinking": include_thinking,
+        "grouping_schema": _GROUPING_SCHEMA,
     }
 
 
@@ -455,7 +497,7 @@ def stream_sessions(
     parquet_path: Path,
     include_thinking: bool = True,
     verbose: bool = False,
-) -> tuple[list[dict[str, Any]], int]:
+) -> tuple[list[dict[str, Any]], SkipStats]:
     """Group every raw record under input_path into per-session conversations.
 
     Two passes. Pass 1 scans the records once, accumulating per-session stats in
@@ -473,9 +515,9 @@ def stream_sessions(
 
     Returns
     -------
-    (sessions, n_skipped)
-        ``n_skipped`` counts records whose session_id was missing or
-        unparsable, so they could not be grouped.
+    (sessions, skipped)
+        ``skipped`` describes the records whose ``end_user`` carried no
+        session_id, so they could not be grouped — see :class:`SkipStats`.
     """
     stats_path = parquet_path.with_suffix(parquet_path.suffix + ".stats.json")
     fingerprint = _cache_fingerprint(input_path, include_thinking=include_thinking)
@@ -497,7 +539,7 @@ def stream_sessions(
         logger.info("Reusing cached Parquet at %s", parquet_path)
         scan = ScanResult(
             session_stats={sid: {**s, "models": set(s["models"])} for sid, s in raw_stats["sessions"].items()},
-            n_skipped=raw_stats.get("n_skipped", 0),
+            skipped=SkipStats(**raw_stats["skipped"]),
         )
     else:
         scan = _scan_and_write_blocks(
@@ -510,7 +552,7 @@ def stream_sessions(
             json.dump(
                 {
                     "fingerprint": fingerprint,
-                    "n_skipped": scan.n_skipped,
+                    "skipped": asdict(scan.skipped),
                     "sessions": {sid: {**s, "models": sorted(s["models"])} for sid, s in scan.session_stats.items()},
                 },
                 f,
@@ -521,12 +563,31 @@ def stream_sessions(
     if not scan.session_stats:
         msg = (
             "No sessions found — all records had an unparsable or missing "
-            f"end_user field. ({scan.n_skipped} records skipped)"
+            f"end_user field. ({scan.skipped.n_records} records skipped)"
         )
         raise SystemExit(msg)
 
     sessions = _build_sessions_from_parquet(parquet_path, scan.session_stats, scan.last_request_ids)
-    return sessions, scan.n_skipped
+    return sessions, scan.skipped
+
+
+def _log_skipped(skipped: SkipStats) -> None:
+    """Report the dropped records, so the gap is visible rather than inferred."""
+    if not skipped.n_records:
+        return
+    logger.warning(
+        "Skipped %d records with no end_user session_id (not grouped): "
+        "$%.2f spend and %d tokens are therefore absent from session totals",
+        skipped.n_records,
+        skipped.spend,
+        skipped.total_tokens,
+    )
+    logger.info(
+        "  of those, %d carried a per-request LiteLLM session_id (never a "
+        "session key) and %d parsed to an account but no session",
+        skipped.n_with_native_session_id,
+        skipped.n_with_account_uuid,
+    )
 
 
 def main() -> None:
@@ -582,7 +643,7 @@ def main() -> None:
         raise SystemExit(msg)
 
     with tempfile.TemporaryDirectory() as tmp:
-        sessions, n_skipped = stream_sessions(
+        sessions, skipped = stream_sessions(
             args.input,
             parquet_path=args.parquet_cache or Path(tmp) / "blocks.parquet",
             include_thinking=args.include_thinking,
@@ -597,8 +658,7 @@ def main() -> None:
         pd.DataFrame(_sessions_to_flat_rows(sessions)).to_parquet(output, index=False)
 
     logger.info("Wrote %d sessions to %s", len(sessions), output)
-    if n_skipped:
-        logger.info("Skipped %d records with no session_id (could not be grouped)", n_skipped)
+    _log_skipped(skipped)
 
 
 if __name__ == "__main__":

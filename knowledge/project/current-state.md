@@ -14,15 +14,15 @@ Much of this bundle still describes a system that has not been built. Read
 
 ## What exists today
 
-| Area              | State                                                                |
-| ----------------- | -------------------------------------------------------------------- |
-| `src/`            | `llmoxie_analysis/data/`: `sources.py`, `reader.py`, `group_sessions.py` — stage one, moved in from upstream |
-| `tests/`          | `test_version.py` plus `tests/data/`: 48 tests over the three data modules |
-| `evals/`          | Skill evals: Inspect harness and samples, Harbor base image and 18 tasks; merged in PR #42 |
-| `knowledge/`      | This bundle                                                          |
+| Area              | State                                                                                                                                          |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/`            | `llmoxie_analysis/data/`: `sources.py`, `reader.py`, `group_sessions.py` — stage one, moved in from upstream                                   |
+| `tests/`          | `test_version.py` plus `tests/data/`: 42 tests over the three data modules                                                                     |
+| `evals/`          | Skill evals: Inspect harness and samples, Harbor base image and 18 tasks; merged in PR #42                                                     |
+| `knowledge/`      | This bundle                                                                                                                                    |
 | `.claude/skills/` | The core-loop skills: setup-env, run-tests, verify, commit, push, create-pr, create-issue, merge-pr, release, docs, clean-branches, okf-memory |
-| `reference/`      | Git submodules: `llmoxie` (the upstream repo) and `ceil-dlp`         |
-| Repository        | Packaging, CI, pre-commit, AI policy, contribution rules             |
+| `reference/`      | Git submodules: `llmoxie` (the upstream repo) and `ceil-dlp`                                                                                   |
+| Repository        | Packaging, CI, pre-commit, AI policy, contribution rules                                                                                       |
 
 ## What is designed but not built
 

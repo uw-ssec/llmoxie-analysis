@@ -3,12 +3,9 @@ type: Decision
 title: Session grouping runs one streaming path for every input
 description: "The DataFrame and streaming implementations were consolidated onto stream_sessions, settling four diverged behaviors and fixing an unbounded pass 2 and a blindly-reused Parquet cache."
 tags: [sessions, grouping, streaming, parquet, consolidation, cache]
-generated: { by: "claude-code:ssec-claude-opus-5", at: "2026-10-14T18:20:34Z" }
+generated: { by: "claude-code:ssec-claude-opus-5", at: "2026-10-27T19:14:28Z" }
 governance: constraint
-code_refs:
-  - src/llmoxie_analysis/data/group_sessions.py
-  - src/llmoxie_analysis/data/README.md
-  - tests/data/test_group_sessions.py
+code_refs: [src/llmoxie_analysis/data/group_sessions.py, src/llmoxie_analysis/data/README.md, tests/data/test_group_sessions.py]
 ---
 
 Session grouping had two independent implementations, selected by file
@@ -47,7 +44,10 @@ merely picking a side:
 
 - It keyed sessions on `session_id != ""`, which let a `None` from the
   native-`session_id` fallback through as a session key. The streaming
-  `if not session_id` catches both.
+  `if not session_id` catches both. The fallback itself was removed on
+  2026-10-27 — see [[caveats/end-user-parsing]]; `end_user` is now the only
+  session key, and the skip count became a `SkipStats` reporting the dropped
+  spend and tokens as well.
 - It aggregated spend and tokens over *block rows*, so a record producing no
   blocks contributed nothing to its session's totals. Stats now accumulate from
   the raw record before flattening, so billed-but-unparsable requests count.

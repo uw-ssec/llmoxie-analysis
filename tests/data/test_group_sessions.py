@@ -12,6 +12,7 @@ from typing import Any
 import pytest
 
 from llmoxie_analysis.data.group_sessions import (
+    SkipStats,
     _iter_raw_records,
     _sessions_to_flat_rows,
     main,
@@ -249,8 +250,8 @@ class TestStreamSessionsIntegration:
     @pytest.fixture
     def sessions(self, tmp_path: Path) -> dict[str, dict[str, Any]]:
         parquet = tmp_path / "blocks.parquet"
-        sessions, n_skipped = stream_sessions(FIXTURES / "sessions.jsonl", parquet_path=parquet)
-        assert n_skipped == 0  # every record in this fixture has a session_id
+        sessions, skipped = stream_sessions(FIXTURES / "sessions.jsonl", parquet_path=parquet)
+        assert skipped.n_records == 0  # every fixture record has a session_id
         return {s["session_id"]: s for s in sessions}
 
     def test_two_sessions_found(self, sessions: dict[str, dict[str, Any]]) -> None:
@@ -375,18 +376,64 @@ class TestThinkingBlocks:
 
 
 class TestSkippedAndEmptyRecords:
+    @staticmethod
+    def _skipped(tmp_path: Path, records: list[dict[str, Any]]) -> SkipStats:
+        """Group ``records`` and return only what pass 1 dropped."""
+        _, skipped = stream_sessions(
+            _write_jsonl(tmp_path / "logs.jsonl", records),
+            parquet_path=tmp_path / "blocks.parquet",
+        )
+        return skipped
+
     def test_record_without_any_session_id_is_skipped(self, tmp_path: Path) -> None:
-        # end_user missing entirely, so the parse yields "" and the native
-        # session_id fallback yields None — neither is a usable session key.
+        # end_user missing entirely, so the parse yields "" — not a usable key.
         records = [
             *_conversation("s1", 1),
             _record("orphan", None, messages=[_text("user", "q")]),
         ]
-        parquet = tmp_path / "blocks.parquet"
-        sessions, n_skipped = stream_sessions(_write_jsonl(tmp_path / "logs.jsonl", records), parquet_path=parquet)
+        skipped = self._skipped(tmp_path, records)
 
-        assert n_skipped == 1
+        assert skipped.n_records == 1
+
+    def test_native_session_id_does_not_rescue_an_unparsable_record(self, tmp_path: Path) -> None:
+        # LiteLLM stamps a distinct top-level session_id on every request, so
+        # using it as a fallback key fabricated one singleton "session" per
+        # ungroupable record. All three of these must be dropped, not grouped.
+        records = [
+            *_conversation("s1", 1),
+            *(
+                _record(f"orphan{i}", None, messages=[_text("user", "q")])
+                | {"session_id": f"litellm-per-request-uuid-{i}"}
+                for i in range(3)
+            ),
+        ]
+        parquet = tmp_path / "blocks.parquet"
+        sessions, skipped = stream_sessions(_write_jsonl(tmp_path / "logs.jsonl", records), parquet_path=parquet)
+
         assert [s["session_id"] for s in sessions] == ["s1"]
+        assert skipped.n_records == 3
+        assert skipped.n_with_native_session_id == 3
+
+    def test_skip_stats_measure_the_reconciliation_gap(self, tmp_path: Path) -> None:
+        # Request-level totals include the drops; session-level totals do not.
+        # The difference is exactly this, so it has to be reported, not implied.
+        orphan = _record("orphan", None, messages=[_text("user", "q")], spend=0.25, total_tokens=700)
+        skipped = self._skipped(tmp_path, [*_conversation("s1", 1), orphan])
+
+        assert skipped.n_records == 1
+        assert skipped.spend == pytest.approx(0.25)
+        assert skipped.total_tokens == 700
+
+    def test_partial_end_user_parse_is_counted_separately(self, tmp_path: Path) -> None:
+        # end_user parsed, but carried no session_id. Still ungroupable, yet
+        # attributable to an account — the subset session recovery could reach.
+        orphan = _record("orphan", None, messages=[_text("user", "q")])
+        orphan["end_user"] = json.dumps({"device_id": "d9", "account_uuid": "a9", "session_id": ""})
+        skipped = self._skipped(tmp_path, [*_conversation("s1", 1), orphan])
+
+        assert skipped.n_records == 1
+        assert skipped.n_with_account_uuid == 1
+        assert skipped.n_with_native_session_id == 0
 
     def test_record_with_no_content_blocks_still_counts_toward_stats(self, tmp_path: Path) -> None:
         # An empty or Responses-API-shaped record yields no block rows, but it
@@ -520,6 +567,26 @@ class TestParquetCache:
         (tmp_path / "out.jsonl").unlink()
         _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 4))
         with pytest.raises(SystemExit, match="does not match"):
+            main()
+
+    def test_cache_from_an_older_grouping_schema_is_rejected(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # A cache built before the native-session_id fallback was removed holds
+        # fabricated singleton sessions in its sidecar. Reusing it would quietly
+        # reinstate the bug the fix removes, so the schema version gates it.
+        _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 2))
+        cache = tmp_path / "blocks.parquet"
+        monkeypatch.setattr("sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache)))
+        main()
+
+        sidecar = cache.with_suffix(cache.suffix + ".stats.json")
+        stats = json.loads(sidecar.read_text())
+        stats["fingerprint"]["grouping_schema"] -= 1
+        sidecar.write_text(json.dumps(stats))
+
+        (tmp_path / "out.jsonl").unlink()
+        with pytest.raises(SystemExit, match="grouping_schema"):
             main()
 
     def test_cache_is_rejected_when_thinking_setting_changed(

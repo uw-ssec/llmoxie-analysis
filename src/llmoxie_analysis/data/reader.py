@@ -63,7 +63,11 @@ def _base_row(record: dict[str, Any]) -> dict[str, Any]:
         "end_time": record.get("endTime"),
         "device_id": eu["device_id"],
         "account_uuid": eu["account_uuid"],
-        "session_id": eu["session_id"] or record.get("session_id"),
+        # end_user is the only source of session identity. The top-level
+        # session_id is a per-request trace id LiteLLM mints fresh every
+        # call, so falling back to it does not recover a session — it
+        # invents a singleton one per record. "" marks it ungroupable.
+        "session_id": eu["session_id"],
         "model": record.get("model"),
         "spend": record.get("spend"),
         "total_tokens": record.get("total_tokens"),
