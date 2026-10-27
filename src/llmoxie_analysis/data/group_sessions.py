@@ -519,6 +519,9 @@ def stream_sessions(
         ``skipped`` describes the records whose ``end_user`` carried no
         session_id, so they could not be grouped — see :class:`SkipStats`.
     """
+    if input_path.is_dir() and parquet_path.resolve().is_relative_to(input_path.resolve()):
+        msg = "Place the Parquet cache outside the input directory so its sidecar is not read as input"
+        raise SystemExit(msg)
     stats_path = parquet_path.with_suffix(parquet_path.suffix + ".stats.json")
     fingerprint = _cache_fingerprint(input_path, include_thinking=include_thinking)
 
