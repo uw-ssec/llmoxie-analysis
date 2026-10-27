@@ -29,5 +29,8 @@ evals/harbor/base/skills/
 .env
 .env.*
 
+# Notebook feature cache: digests derived from a local extract
+notebooks/cache/
+
 # MacOS
 .DS_Store

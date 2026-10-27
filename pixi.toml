@@ -11,6 +11,7 @@ version = "0.1.0" # Project version
 default = { features = ["pre-commit", "gh-cli", "docs"], solve-group = "default" } # The default development environment with pre-commit, GitHub CLI, and documentation tooling
 onboard = { features = ["pre-commit", "gh-cli", "docs", "onboard"], solve-group = "default" } # The onboarding environment with additional setup tasks
 evals = { features = ["pre-commit", "gh-cli", "evals"], solve-group = "evals" } # Skill-evaluation environment with Inspect and Harbor (own solve group: needs Python 3.12+)
+notebooks = { features = ["pre-commit", "gh-cli", "notebooks"], solve-group = "default" } # Exploratory analysis in Jupyter; see notebooks/README.md
 
 # The project dependencies
 [dependencies]
@@ -112,3 +113,14 @@ harbor-agent = { cmd = "harbor run -p evals/harbor/tasks -a claude-code -o evals
 harbor-view = { cmd = "harbor view evals/logs/harbor", description = "Open the Harbor trajectory viewer for local job logs" }
 # --- Combined --------------------------------------------------------------
 evals-smoke = { depends-on = ["inspect-smoke", "harbor-oracle"], description = "Inspect smoke then every harbor task with the oracle agent (needs Docker)" }
+
+# Notebooks feature: exploratory analysis against a local extract. Kept out of
+# the default environment so CI never solves JupyterLab.
+[feature.notebooks.dependencies]
+jupyterlab = ">=4.2"
+matplotlib-base = ">=3.8"
+nbconvert = ">=7.16"
+
+[feature.notebooks.tasks]
+lab = { cmd = "jupyter lab --notebook-dir=notebooks", description = "Open JupyterLab on notebooks/ (needs LLMOXIE_RAW set to a local extract)" }
+nb-run = { cmd = "jupyter nbconvert --to notebook --execute --inplace", description = "Execute a notebook in place, e.g. pixi run -e notebooks nb-run notebooks/session_reconstruction.ipynb" }
