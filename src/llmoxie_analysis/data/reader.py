@@ -310,11 +310,16 @@ def deduplicate_messages(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame
         Deduplicated DataFrame with one row per unique content block.
     """
-    input_deduped = (
-        df[df["direction"] == "input"]
-        .sort_values(["start_time", "msg_idx", "block_idx"])
-        .drop_duplicates(subset=["session_id", "msg_idx", "block_idx"])
-    )
+    input_rows = df[df["direction"] == "input"]
+    has_session = input_rows["session_id"].notna() & input_rows["session_id"].ne("")
+    input_deduped = pd.concat(
+        [
+            input_rows[has_session]
+            .sort_values(["start_time", "msg_idx", "block_idx"])
+            .drop_duplicates(subset=["session_id", "msg_idx", "block_idx"]),
+            input_rows[~has_session],
+        ]
+    ).sort_values(["start_time", "msg_idx", "block_idx"])
     return pd.concat(
         [input_deduped, df[df["direction"] == "output"]],
         ignore_index=True,
