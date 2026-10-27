@@ -25,9 +25,7 @@ def _adls_record() -> dict[str, Any]:
                     "user_api_key_hash": "hash1",
                 },
                 "messages": [{"role": "user", "content": "hi"}],
-                "response": {
-                    "choices": [{"message": {"role": "assistant", "content": "hello"}}]
-                },
+                "response": {"choices": [{"message": {"role": "assistant", "content": "hello"}}]},
             }
         }
     }
@@ -46,9 +44,7 @@ def _litellm_record() -> dict[str, Any]:
         "api_key": "hash1",
         "metadata": {"user_api_key_alias": "carlos-api"},
         "proxy_server_request": {"messages": [{"role": "user", "content": "hi"}]},
-        "response": {
-            "choices": [{"message": {"role": "assistant", "content": "hello"}}]
-        },
+        "response": {"choices": [{"message": {"role": "assistant", "content": "hello"}}]},
     }
 
 
@@ -72,9 +68,7 @@ class TestFromAdls:
         assert adapted["spend"] == 0.05
         assert adapted["total_tokens"] == 500
         assert adapted["metadata"]["user_api_key_alias"] == "carlos-api"
-        assert adapted["proxy_server_request"]["messages"] == [
-            {"role": "user", "content": "hi"}
-        ]
+        assert adapted["proxy_server_request"]["messages"] == [{"role": "user", "content": "hi"}]
         assert adapted["response"]["choices"][0]["message"]["content"] == "hello"
 
     def test_falls_back_to_filename_request_id_when_missing(self) -> None:

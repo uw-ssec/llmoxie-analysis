@@ -68,9 +68,7 @@ def _record(
 
 def _session_a() -> list[dict[str, Any]]:
     """Five plain text turns, `end_user` as a JSON object."""
-    end_user = json.dumps(
-        {"device_id": "a1b2c3d4", "account_uuid": "account-a", "session_id": SESSION_A}
-    )
+    end_user = json.dumps({"device_id": "a1b2c3d4", "account_uuid": "account-a", "session_id": SESSION_A})
     records = []
     history: list[dict[str, Any]] = []
     for turn in range(5):

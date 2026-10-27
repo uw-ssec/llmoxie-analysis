@@ -157,9 +157,7 @@ def _rows_from_record(
     def _add(direction: str, msg_idx: int | None, role: str, content: Any) -> None:
         """Append every surviving block row of one message's content."""
         for block_idx, block in enumerate(_iter_blocks(content)):
-            row = _row_from_block(
-                base, direction, msg_idx, role, block_idx, block, **kwargs
-            )
+            row = _row_from_block(base, direction, msg_idx, role, block_idx, block, **kwargs)
             if row is not None:
                 rows.append(row)
 
@@ -253,9 +251,7 @@ def load_messages(
         tool_input, tool_use_id, cache_control.
     """
     with jsonlines.open(Path(path)) as reader:
-        return load_messages_from_records(
-            reader, include_thinking=include_thinking, include_tool_use=include_tool_use
-        )
+        return load_messages_from_records(reader, include_thinking=include_thinking, include_tool_use=include_tool_use)
 
 
 def last_request_per_session(df: pd.DataFrame) -> pd.DataFrame:

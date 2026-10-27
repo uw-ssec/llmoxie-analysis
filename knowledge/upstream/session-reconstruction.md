@@ -100,9 +100,7 @@ This ordering constraint is the subject of [[caveats/dedup-vs-last-request]].
 **It counts what it drops.**
 
 ```python
-n_requests_skipped = raw_input_df.loc[
-    raw_input_df["session_id"] == "", "request_id"
-].nunique()
+n_requests_skipped = raw_input_df.loc[raw_input_df["session_id"] == "", "request_id"].nunique()
 ```
 
 That second return value is the `skipped_session_count` the epic requires every

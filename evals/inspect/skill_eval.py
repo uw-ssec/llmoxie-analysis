@@ -95,9 +95,7 @@ def load_samples(name: str) -> list[Sample]:
     ValueError
         If an entry lacks ``input`` or ``smoke_answer``.
     """
-    entries: list[dict[str, Any]] = yaml.safe_load(
-        (SAMPLES_DIR / f"{name}.yaml").read_text()
-    )
+    entries: list[dict[str, Any]] = yaml.safe_load((SAMPLES_DIR / f"{name}.yaml").read_text())
     if not isinstance(entries, list):
         msg = f"{name}.yaml must be a list of samples"
         raise ValueError(msg)  # noqa: TRY004  # malformed YAML data, not a bad argument
@@ -168,9 +166,7 @@ def inject_skill() -> Solver:
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:  # noqa: ARG001  # Inspect solver signature
         """Inspect callback."""
-        state.messages.insert(
-            0, ChatMessageSystem(content=state.metadata["skill_body"] + TEXT_ONLY_NOTE)
-        )
+        state.messages.insert(0, ChatMessageSystem(content=state.metadata["skill_body"] + TEXT_ONLY_NOTE))
         return state
 
     return solve
@@ -188,9 +184,7 @@ def smoke_answer() -> Solver:
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:  # noqa: ARG001  # Inspect solver signature
         """Inspect callback."""
-        state.output = ModelOutput.from_content(
-            model="mockllm/model", content=state.metadata["smoke_answer"]
-        )
+        state.output = ModelOutput.from_content(model="mockllm/model", content=state.metadata["smoke_answer"])
         return state
 
     return solve
@@ -211,14 +205,10 @@ def rules() -> Scorer:
         text = state.output.completion
         for rule in state.metadata["must"]:
             if not rule_matches(text, rule):
-                return Score(
-                    value=INCORRECT, answer=text, explanation=f"missing: {rule}"
-                )
+                return Score(value=INCORRECT, answer=text, explanation=f"missing: {rule}")
         for rule in state.metadata["must_not"]:
             if rule_matches(text, rule):
-                return Score(
-                    value=INCORRECT, answer=text, explanation=f"forbidden: {rule}"
-                )
+                return Score(value=INCORRECT, answer=text, explanation=f"forbidden: {rule}")
         return Score(value=CORRECT, answer=text, explanation="all rules hold")
 
     return score
@@ -241,9 +231,7 @@ def skill(name: str = "all", smoke: bool = False) -> Task:
     Task
         The configured Inspect task.
     """
-    names = (
-        sorted(p.stem for p in SAMPLES_DIR.glob("*.yaml")) if name == "all" else [name]
-    )
+    names = sorted(p.stem for p in SAMPLES_DIR.glob("*.yaml")) if name == "all" else [name]
     dataset = [sample for n in names for sample in load_samples(n)]
     answer: Solver = smoke_answer() if smoke else generate()
     return Task(dataset=dataset, solver=[inject_skill(), answer], scorer=rules())

@@ -50,16 +50,10 @@ def _record(
         "total_tokens": total_tokens,
         "metadata": {"user_api_key_alias": "alias"},
         "proxy_server_request": {"messages": messages or []},
-        "response": (
-            {"choices": [{"message": {"role": "assistant", "content": reply}}]}
-            if reply is not None
-            else {}
-        ),
+        "response": ({"choices": [{"message": {"role": "assistant", "content": reply}}]} if reply is not None else {}),
     }
     if session_id is not None:
-        record["end_user"] = json.dumps(
-            {"device_id": "d1", "account_uuid": "a1", "session_id": session_id}
-        )
+        record["end_user"] = json.dumps({"device_id": "d1", "account_uuid": "a1", "session_id": session_id})
     return record
 
 
@@ -90,11 +84,7 @@ def _to_adls(record: dict[str, Any]) -> dict[str, Any]:
     """Re-shape a spend-log record into the ADLS blob shape sources.from_adls reads."""
 
     def _epoch(iso: str) -> float:
-        return (
-            datetime.strptime(iso, "%Y-%m-%dT%H:%M:%S.%fZ")
-            .replace(tzinfo=UTC)
-            .timestamp()
-        )
+        return datetime.strptime(iso, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=UTC).timestamp()
 
     return {
         "kwargs": {
@@ -140,9 +130,7 @@ def _write_zip(path: Path, records: list[dict[str, Any]]) -> Path:
     return path
 
 
-def _sessions_by_id(
-    input_path: Path, tmp_path: Path, **kwargs: Any
-) -> dict[str, dict[str, Any]]:
+def _sessions_by_id(input_path: Path, tmp_path: Path, **kwargs: Any) -> dict[str, dict[str, Any]]:
     """Run the streaming pipeline and key the result by session_id."""
     parquet = tmp_path / f"{input_path.name}.blocks.parquet"
     sessions, _ = stream_sessions(input_path, parquet_path=parquet, **kwargs)
@@ -151,11 +139,7 @@ def _sessions_by_id(
 
 def _transcript(session: dict[str, Any]) -> list[tuple[str, str]]:
     """Flatten a session's messages to (role, type) pairs for terse comparison."""
-    return [
-        (m["role"], block.get("type", ""))
-        for m in session["messages"]
-        for block in m["content"]
-    ]
+    return [(m["role"], block.get("type", "")) for m in session["messages"] for block in m["content"]]
 
 
 class TestIterRawRecords:
@@ -183,9 +167,7 @@ class TestIterRawRecords:
         assert records == []
         assert "Skipping unparsable" in caplog.text
 
-    def test_single_adls_json_file_uses_filename_as_request_id(
-        self, tmp_path: Path
-    ) -> None:
+    def test_single_adls_json_file_uses_filename_as_request_id(self, tmp_path: Path) -> None:
         p = tmp_path / "req-abc.json"
         p.write_text(json.dumps({"kwargs": {"standard_logging_object": {}}}))
         records = list(_iter_raw_records(p))
@@ -267,9 +249,7 @@ class TestStreamSessionsIntegration:
     @pytest.fixture
     def sessions(self, tmp_path: Path) -> dict[str, dict[str, Any]]:
         parquet = tmp_path / "blocks.parquet"
-        sessions, n_skipped = stream_sessions(
-            FIXTURES / "sessions.jsonl", parquet_path=parquet
-        )
+        sessions, n_skipped = stream_sessions(FIXTURES / "sessions.jsonl", parquet_path=parquet)
         assert n_skipped == 0  # every record in this fixture has a session_id
         return {s["session_id"]: s for s in sessions}
 
@@ -279,9 +259,7 @@ class TestStreamSessionsIntegration:
             "22222222-2222-2222-2222-222222222222",
         }
 
-    def test_text_session_reconstructed_in_order(
-        self, sessions: dict[str, dict[str, Any]]
-    ) -> None:
+    def test_text_session_reconstructed_in_order(self, sessions: dict[str, dict[str, Any]]) -> None:
         # Five requests, each resending the history, rebuild as ten messages:
         # the five user turns interleaved with the five replies.
         s = sessions["11111111-1111-1111-1111-111111111111"]
@@ -293,9 +271,7 @@ class TestStreamSessionsIntegration:
         # ends with the assistant's final reply
         assert s["messages"][-1]["role"] == "assistant"
 
-    def test_tool_session_tool_use_tool_result_pairing(
-        self, sessions: dict[str, dict[str, Any]]
-    ) -> None:
+    def test_tool_session_tool_use_tool_result_pairing(self, sessions: dict[str, dict[str, Any]]) -> None:
         s = sessions["22222222-2222-2222-2222-222222222222"]
         assert s["n_requests"] == 6
         assert len(s["messages"]) == 12
@@ -303,9 +279,7 @@ class TestStreamSessionsIntegration:
         # in the very next (user) message
         pairs_checked = 0
         for i, m in enumerate(s["messages"][:-1]):
-            tool_use_ids = [
-                c["id"] for c in m["content"] if c.get("type") == "tool_use"
-            ]
+            tool_use_ids = [c["id"] for c in m["content"] if c.get("type") == "tool_use"]
             if not tool_use_ids:
                 continue
             next_msg = s["messages"][i + 1]
@@ -314,9 +288,7 @@ class TestStreamSessionsIntegration:
             pairs_checked += 1
         assert pairs_checked == 5
 
-    def test_session_stats_are_positive(
-        self, sessions: dict[str, dict[str, Any]]
-    ) -> None:
+    def test_session_stats_are_positive(self, sessions: dict[str, dict[str, Any]]) -> None:
         for s in sessions.values():
             assert s["total_spend"] > 0
             assert s["total_tokens"] > 0
@@ -324,9 +296,7 @@ class TestStreamSessionsIntegration:
 
 
 class TestMainRefusesToOverwriteOutput:
-    def test_exits_if_output_already_exists(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_exits_if_output_already_exists(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         existing_output = tmp_path / "sessions.jsonl"
         existing_output.write_text("not touching this\n")
 
@@ -359,21 +329,13 @@ class TestInputTypeParity:
         as_dir.mkdir()
         _write_jsonl(as_dir / "logs.jsonl", records)
 
-        results = [
-            _sessions_by_id(path, tmp_path) for path in (as_jsonl, as_zip, as_dir)
-        ]
+        results = [_sessions_by_id(path, tmp_path) for path in (as_jsonl, as_zip, as_dir)]
         assert results[0] == results[1] == results[2]
 
-    def test_adls_json_directory_rebuilds_the_same_conversation(
-        self, tmp_path: Path
-    ) -> None:
+    def test_adls_json_directory_rebuilds_the_same_conversation(self, tmp_path: Path) -> None:
         records = _conversation("s1", 3)
-        from_jsonl = _sessions_by_id(
-            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
-        )
-        from_adls = _sessions_by_id(
-            _write_json_dir(tmp_path / "adls", records), tmp_path
-        )
+        from_jsonl = _sessions_by_id(_write_jsonl(tmp_path / "logs.jsonl", records), tmp_path)
+        from_adls = _sessions_by_id(_write_json_dir(tmp_path / "adls", records), tmp_path)
 
         assert set(from_adls) == {"s1"}
         assert from_adls["s1"]["messages"] == from_jsonl["s1"]["messages"]
@@ -395,21 +357,15 @@ class TestThinkingBlocks:
             )
         ]
 
-    def test_included_by_default(
-        self, tmp_path: Path, records: list[dict[str, Any]]
-    ) -> None:
-        sessions = _sessions_by_id(
-            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
-        )
+    def test_included_by_default(self, tmp_path: Path, records: list[dict[str, Any]]) -> None:
+        sessions = _sessions_by_id(_write_jsonl(tmp_path / "logs.jsonl", records), tmp_path)
         assert _transcript(sessions["s1"]) == [
             ("user", "text"),
             ("assistant", "thinking"),
             ("assistant", "text"),
         ]
 
-    def test_dropped_when_disabled(
-        self, tmp_path: Path, records: list[dict[str, Any]]
-    ) -> None:
+    def test_dropped_when_disabled(self, tmp_path: Path, records: list[dict[str, Any]]) -> None:
         sessions = _sessions_by_id(
             _write_jsonl(tmp_path / "logs.jsonl", records),
             tmp_path,
@@ -427,25 +383,19 @@ class TestSkippedAndEmptyRecords:
             _record("orphan", None, messages=[_text("user", "q")]),
         ]
         parquet = tmp_path / "blocks.parquet"
-        sessions, n_skipped = stream_sessions(
-            _write_jsonl(tmp_path / "logs.jsonl", records), parquet_path=parquet
-        )
+        sessions, n_skipped = stream_sessions(_write_jsonl(tmp_path / "logs.jsonl", records), parquet_path=parquet)
 
         assert n_skipped == 1
         assert [s["session_id"] for s in sessions] == ["s1"]
 
-    def test_record_with_no_content_blocks_still_counts_toward_stats(
-        self, tmp_path: Path
-    ) -> None:
+    def test_record_with_no_content_blocks_still_counts_toward_stats(self, tmp_path: Path) -> None:
         # An empty or Responses-API-shaped record yields no block rows, but it
         # was still a billed request and must not vanish from the totals.
         records = [
             *_conversation("s1", 1),
             _record("empty", "s1", spend=0.5, total_tokens=50),
         ]
-        sessions = _sessions_by_id(
-            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
-        )
+        sessions = _sessions_by_id(_write_jsonl(tmp_path / "logs.jsonl", records), tmp_path)
 
         assert sessions["s1"]["n_requests"] == 2
         assert sessions["s1"]["total_spend"] == pytest.approx(0.51)
@@ -456,9 +406,7 @@ class TestLastRequestSelection:
     def test_only_the_longest_request_is_reconstructed(self, tmp_path: Path) -> None:
         # Three requests resending growing history: the transcript must be the
         # last one's, not a concatenation of all three.
-        sessions = _sessions_by_id(
-            _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 3)), tmp_path
-        )
+        sessions = _sessions_by_id(_write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 3)), tmp_path)
 
         assert sessions["s1"]["n_requests"] == 3
         assert _transcript(sessions["s1"]) == [
@@ -481,9 +429,7 @@ class TestSessionStatsSeeding:
     these guard.
     """
 
-    def test_session_with_no_messages_still_picks_a_request(
-        self, tmp_path: Path
-    ) -> None:
+    def test_session_with_no_messages_still_picks_a_request(self, tmp_path: Path) -> None:
         # Every request has an empty input and no timestamp, but a parseable
         # reply — so the session has block rows, yet neither half of the
         # tie-break can ever beat a neutral seed. Seeding `_best_*` from the
@@ -493,18 +439,14 @@ class TestSessionStatsSeeding:
             _record("r1", "s1", start="", reply=[{"type": "text", "text": "a"}]),
             _record("r2", "s1", start="", reply=[{"type": "text", "text": "b"}]),
         ]
-        sessions = _sessions_by_id(
-            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
-        )
+        sessions = _sessions_by_id(_write_jsonl(tmp_path / "logs.jsonl", records), tmp_path)
 
         assert sessions["s1"]["n_requests"] == 2
         assert _transcript(sessions["s1"]) == [("assistant", "text")]
 
     def test_first_record_wins_for_identity_fields(self, tmp_path: Path) -> None:
         later = _record("r2", "s1", messages=[_text("user", "q")])
-        later["end_user"] = json.dumps(
-            {"device_id": "d2", "account_uuid": "a2", "session_id": "s1"}
-        )
+        later["end_user"] = json.dumps({"device_id": "d2", "account_uuid": "a2", "session_id": "s1"})
         later["metadata"] = {"user_api_key_alias": "alias2"}
         sessions = _sessions_by_id(
             _write_jsonl(tmp_path / "logs.jsonl", [_record("r1", "s1"), later]),
@@ -523,9 +465,7 @@ class TestSessionStatsSeeding:
             # first record's value.
             _record("r2", "s1", start="2026-03-01T00:00:01.000000Z", reply=reply),
         ]
-        sessions = _sessions_by_id(
-            _write_jsonl(tmp_path / "logs.jsonl", records), tmp_path
-        )
+        sessions = _sessions_by_id(_write_jsonl(tmp_path / "logs.jsonl", records), tmp_path)
 
         assert sessions["s1"]["total_spend"] == pytest.approx(0.02)
         assert sessions["s1"]["total_tokens"] == 200
@@ -550,11 +490,7 @@ class TestParquetCache:
         monkeypatch.setattr("sys.argv", self._argv(tmp_path))
         main()
 
-        leftovers = [
-            p.name
-            for p in tmp_path.iterdir()
-            if p.suffix == ".parquet" or p.name.endswith(".stats.json")
-        ]
+        leftovers = [p.name for p in tmp_path.iterdir() if p.suffix == ".parquet" or p.name.endswith(".stats.json")]
         assert leftovers == []
         assert (tmp_path / "out.jsonl").exists()
 
@@ -566,9 +502,7 @@ class TestParquetCache:
     ) -> None:
         _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 2))
         cache = tmp_path / "blocks.parquet"
-        monkeypatch.setattr(
-            "sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache))
-        )
+        monkeypatch.setattr("sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache)))
         main()
         assert cache.exists()
 
@@ -577,14 +511,10 @@ class TestParquetCache:
             main()
         assert "Reusing cached Parquet" in caplog.text
 
-    def test_cache_is_rejected_when_the_input_changed(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_cache_is_rejected_when_the_input_changed(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 2))
         cache = tmp_path / "blocks.parquet"
-        monkeypatch.setattr(
-            "sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache))
-        )
+        monkeypatch.setattr("sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache)))
         main()
 
         (tmp_path / "out.jsonl").unlink()
@@ -599,9 +529,7 @@ class TestParquetCache:
         # reusing one built the other way would silently produce wrong output.
         _write_jsonl(tmp_path / "logs.jsonl", _conversation("s1", 2))
         cache = tmp_path / "blocks.parquet"
-        monkeypatch.setattr(
-            "sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache))
-        )
+        monkeypatch.setattr("sys.argv", self._argv(tmp_path, "--parquet-cache", str(cache)))
         main()
 
         (tmp_path / "out.jsonl").unlink()

@@ -194,9 +194,7 @@ class TestLoadMessagesFromRecords:
             "spend": 0.01,
             "total_tokens": 100,
             "metadata": {"user_api_key_alias": "test-api"},
-            "proxy_server_request": {
-                "messages": [{"role": "user", "content": "hello"}]
-            },
+            "proxy_server_request": {"messages": [{"role": "user", "content": "hello"}]},
             "response": {
                 "choices": [
                     {
@@ -220,17 +218,11 @@ class TestLoadMessagesFromRecords:
         assert output_rows.iloc[0]["text"] == "hi there"
         assert output_rows.iloc[0]["role"] == "assistant"
 
-    def test_missing_response_choices_logs_warning_not_crash(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_missing_response_choices_logs_warning_not_crash(self, caplog: pytest.LogCaptureFixture) -> None:
         record = {
             "request_id": "r1",
-            "proxy_server_request": {
-                "messages": [{"role": "user", "content": "hello"}]
-            },
-            "response": {
-                "output": [{"type": "message"}]
-            },  # Responses-API shape, no "choices"
+            "proxy_server_request": {"messages": [{"role": "user", "content": "hello"}]},
+            "response": {"output": [{"type": "message"}]},  # Responses-API shape, no "choices"
         }
         with caplog.at_level(logging.WARNING):
             df = load_messages_from_records([record])
@@ -265,9 +257,7 @@ class TestLoadMessagesFromRecords:
         df = load_messages_from_records([record])
         assert df.iloc[0]["session_id"] == "top-level-uuid"
 
-    def test_no_input_or_output_logs_warning(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_no_input_or_output_logs_warning(self, caplog: pytest.LogCaptureFixture) -> None:
         record = {"request_id": "r1"}
         with caplog.at_level(logging.WARNING):
             df = load_messages_from_records([record])

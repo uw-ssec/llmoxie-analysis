@@ -95,9 +95,7 @@ def _iter_raw_records(input_path: Path) -> Iterator[dict[str, Any]]:
                 if name.endswith(".jsonl"):
                     with (
                         zf.open(name) as fh,
-                        jsonlines.Reader(
-                            io.TextIOWrapper(fh, encoding="utf-8")
-                        ) as reader,
+                        jsonlines.Reader(io.TextIOWrapper(fh, encoding="utf-8")) as reader,
                     ):
                         yield from reader
                 elif name.endswith(".json"):
@@ -171,15 +169,11 @@ def _reconstruct_conversation(last_request_rows: pd.DataFrame) -> list[dict[str,
     output blocks are the final assistant turn.
     """
     messages: list[dict[str, Any]] = []
-    input_rows = last_request_rows[
-        last_request_rows["direction"] == "input"
-    ].sort_values(["msg_idx", "block_idx"])
+    input_rows = last_request_rows[last_request_rows["direction"] == "input"].sort_values(["msg_idx", "block_idx"])
     for _, block_rows in input_rows.groupby("msg_idx", sort=True):
         messages.append(_blocks_to_message(block_rows))
 
-    output_rows = last_request_rows[
-        last_request_rows["direction"] == "output"
-    ].sort_values("block_idx")
+    output_rows = last_request_rows[last_request_rows["direction"] == "output"].sort_values("block_idx")
     if not output_rows.empty:
         messages.append(_blocks_to_message(output_rows))
 
@@ -297,9 +291,7 @@ def _scan_and_write_blocks(
     if not verbose:
         _reader_logger.setLevel(logging.ERROR)
     try:
-        for record in tqdm(
-            _iter_raw_records(input_path), unit="rec", desc="Pass 1: scanning"
-        ):
+        for record in tqdm(_iter_raw_records(input_path), unit="rec", desc="Pass 1: scanning"):
             eu = _parse_end_user(record.get("end_user"))
             session_id = eu["session_id"] or record.get("session_id")
 
@@ -315,9 +307,7 @@ def _scan_and_write_blocks(
             model = record.get("model")
             metadata = record.get("metadata") or {}
             alias = metadata.get("user_api_key_alias")
-            n_messages = len(
-                (record.get("proxy_server_request") or {}).get("messages") or []
-            )
+            n_messages = len((record.get("proxy_server_request") or {}).get("messages") or [])
 
             # Seed a neutral record, then run the same accumulation for every
             # record including the first.  The seed is neutral for the summed
@@ -354,16 +344,13 @@ def _scan_and_write_blocks(
             if model:
                 s["models"].add(model)
             if n_messages > s["_best_n_messages"] or (
-                n_messages == s["_best_n_messages"]
-                and start_time > s["_best_start_time"]
+                n_messages == s["_best_n_messages"] and start_time > s["_best_start_time"]
             ):
                 s["_best_request_id"] = request_id
                 s["_best_n_messages"] = n_messages
                 s["_best_start_time"] = start_time
 
-            block_rows = _rows_from_record(
-                record, include_thinking=include_thinking, include_tool_use=True
-            )
+            block_rows = _rows_from_record(record, include_thinking=include_thinking, include_tool_use=True)
             if not block_rows:
                 n_no_content += 1
             for row in block_rows:
@@ -447,11 +434,7 @@ def _cache_fingerprint(input_path: Path, *, include_thinking: bool) -> dict[str,
     thinking run would quietly produce a transcript missing its thinking blocks.
     """
     if input_path.is_dir():
-        files = [
-            p
-            for p in input_path.rglob("*")
-            if p.suffix in (".jsonl", ".json") and p.is_file()
-        ]
+        files = [p for p in input_path.rglob("*") if p.suffix in (".jsonl", ".json") and p.is_file()]
         size = len(files)
         mtime_ns = max((p.stat().st_mtime_ns for p in files), default=0)
     else:
@@ -499,18 +482,13 @@ def stream_sessions(
 
     if parquet_path.exists():
         if not stats_path.exists():
-            msg = (
-                f"Parquet cache found at {parquet_path} but sidecar "
-                f"{stats_path} is missing"
-            )
+            msg = f"Parquet cache found at {parquet_path} but sidecar {stats_path} is missing"
             raise SystemExit(msg)
         with stats_path.open() as f:
             raw_stats = json.load(f)
         cached = raw_stats.get("fingerprint")
         if cached != fingerprint:
-            differing = sorted(
-                k for k in fingerprint if not cached or cached.get(k) != fingerprint[k]
-            )
+            differing = sorted(k for k in fingerprint if not cached or cached.get(k) != fingerprint[k])
             msg = (
                 f"Parquet cache at {parquet_path} does not match this input "
                 f"(differs on: {', '.join(differing)}). Delete it to rebuild."
@@ -518,10 +496,7 @@ def stream_sessions(
             raise SystemExit(msg)
         logger.info("Reusing cached Parquet at %s", parquet_path)
         scan = ScanResult(
-            session_stats={
-                sid: {**s, "models": set(s["models"])}
-                for sid, s in raw_stats["sessions"].items()
-            },
+            session_stats={sid: {**s, "models": set(s["models"])} for sid, s in raw_stats["sessions"].items()},
             n_skipped=raw_stats.get("n_skipped", 0),
         )
     else:
@@ -536,10 +511,7 @@ def stream_sessions(
                 {
                     "fingerprint": fingerprint,
                     "n_skipped": scan.n_skipped,
-                    "sessions": {
-                        sid: {**s, "models": sorted(s["models"])}
-                        for sid, s in scan.session_stats.items()
-                    },
+                    "sessions": {sid: {**s, "models": sorted(s["models"])} for sid, s in scan.session_stats.items()},
                 },
                 f,
             )
@@ -553,9 +525,7 @@ def stream_sessions(
         )
         raise SystemExit(msg)
 
-    sessions = _build_sessions_from_parquet(
-        parquet_path, scan.session_stats, scan.last_request_ids
-    )
+    sessions = _build_sessions_from_parquet(parquet_path, scan.session_stats, scan.last_request_ids)
     return sessions, scan.n_skipped
 
 
@@ -563,16 +533,11 @@ def main() -> None:
     """CLI entry point: parse args, load the input, build sessions, write the output."""
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         "input",
         type=Path,
-        help=(
-            "Raw data: a .jsonl file, a .json file, a directory of either "
-            "(searched recursively), or a .zip of them"
-        ),
+        help=("Raw data: a .jsonl file, a .json file, a directory of either (searched recursively), or a .zip of them"),
     )
     parser.add_argument(
         "-o",
@@ -633,9 +598,7 @@ def main() -> None:
 
     logger.info("Wrote %d sessions to %s", len(sessions), output)
     if n_skipped:
-        logger.info(
-            "Skipped %d records with no session_id (could not be grouped)", n_skipped
-        )
+        logger.info("Skipped %d records with no session_id (could not be grouped)", n_skipped)
 
 
 if __name__ == "__main__":

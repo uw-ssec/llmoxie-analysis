@@ -112,8 +112,9 @@ every request" to "one decoded row group + the matching rows", which is the
 output size — the floor, since `sessions` is accumulated as a list and sorted by
 `start_time`.
 
-**Cache fingerprint** — new `_cache_fingerprint(input_path, *, include_thinking)`
-stored in the `.stats.json` sidecar:
+**Cache fingerprint** — new
+`_cache_fingerprint(input_path, *, include_thinking)` stored in the
+`.stats.json` sidecar:
 
 - file input:
   `{"path": str(resolved), "size": st_size, "mtime_ns": st_mtime_ns, "include_thinking": bool}`
