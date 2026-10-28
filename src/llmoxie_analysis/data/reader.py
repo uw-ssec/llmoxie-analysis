@@ -277,7 +277,7 @@ def last_request_per_session(df: pd.DataFrame) -> pd.DataFrame:
         ``session_id``.
     """
     longest = (
-        df[df["direction"] == "input"]
+        df[(df["direction"] == "input") & (df["session_id"].notna() & df["session_id"].ne(""))]
         .groupby(["session_id", "request_id", "start_time"], dropna=False)["msg_idx"]
         .max()
         .reset_index()
