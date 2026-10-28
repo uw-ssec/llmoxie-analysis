@@ -434,15 +434,14 @@ def _build_sessions_from_parquet(
     )
 
     sessions: list[dict[str, Any]] = []
-    for session_id, group in tqdm(
-        df.groupby("session_id"),
+    grouped = df.groupby("session_id")
+    for session_id, s in tqdm(
+        session_stats.items(),
         total=len(session_stats),
         unit="session",
         desc="Pass 2: building sessions",
     ):
-        s = session_stats.get(session_id)
-        if s is None:
-            continue
+        group = grouped.get_group(session_id) if session_id in grouped.groups else df.iloc[:0]
         sessions.append(
             {
                 "session_id": session_id,
