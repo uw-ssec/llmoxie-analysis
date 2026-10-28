@@ -50,9 +50,7 @@ record = {
     "timestamp_start": start_time.isoformat(),
     "timestamp_end": end_time.isoformat(),
     "kwargs": kwargs,
-    "response": response_obj.model_dump()
-    if hasattr(response_obj, "model_dump")
-    else None,
+    "response": response_obj.model_dump() if hasattr(response_obj, "model_dump") else None,
     "cost": litellm.completion_cost(completion_response=response_obj),
 }
 ```

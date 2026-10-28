@@ -1,3 +1,22 @@
+## 2026-10-27
+* **Update**: Updated concept `pipeline/session-grouping-single-path.md`.
+* **Update**: Updated concept `caveats/end-user-parsing.md`.
+
+## 2026-10-14
+* **Update**: Linked `pipeline/session-grouping-single-path.md` to `caveats/cost-token-double-counting.md` (Empty records now counted in the spend and token sums this caveat is about.).
+* **Update**: Linked `pipeline/session-grouping-single-path.md` to `caveats/end-user-parsing.md` (The skip count this decision redefined from distinct request_ids to records.).
+* **Update**: Linked `pipeline/session-grouping-single-path.md` to `caveats/dedup-vs-last-request.md` (Why last_request_per_session and deduplicate_messages stay public with no caller in group_sessions.py.).
+* **Update**: Linked `pipeline/session-grouping-single-path.md` to `upstream/session-reconstruction.md` (The prototype and its two code paths that this consolidation replaced.).
+* **Update**: Updated concept `upstream/session-reconstruction.md`.
+* **Creation**: Documented concept `pipeline/session-grouping-single-path.md` (Session grouping runs one streaming path for every input).
+
+## 2026-10-13
+* **Update**: Updated concept `project/pixi-gate-quirks.md`.
+* **Update**: Updated concept `project/current-state.md`.
+* **Update**: Linked `datasets/synthetic-test-fixture.md` to `upstream/session-reconstruction.md` (The prototype whose integration tests this fixture replaces.).
+* **Update**: Linked `datasets/synthetic-test-fixture.md` to `datasets/pii-handling.md` (The rule that forbade committing the real fixture, and the reason this one is fabricated.).
+* **Creation**: Documented concept `datasets/synthetic-test-fixture.md` (The Integration Fixture Is Synthetic, By Design).
+
 ## 2026-09-23
 * **Update**: Linked `project/codespaces-prebuild.md` to `project/pixi-gate-quirks.md` (The prebuild bakes all three pixi environments, so the pixi gate quirks apply to what a prebuilt codespace ships with).
 * **Update**: Updated concept `project/codespaces-prebuild.md`.

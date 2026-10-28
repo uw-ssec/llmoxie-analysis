@@ -51,12 +51,17 @@ conversation?"** and for the `net_` metrics in
     comparison is then being made against mutilated inputs, and the function
     happily returns a truncated conversation with no error.
 
-The upstream prototype encodes this constraint in a comment inside
+The upstream prototype encoded this constraint in a comment inside
 `build_sessions` (see [[upstream/session-reconstruction]]):
 
 > Keep the raw (non-deduped) data: `last_request_per_session` needs each
 > request's own full resent history intact. `deduplicate_messages` would strip
 > most of that history away.
+
+`build_sessions` has since been deleted and the streaming path never builds a
+deduplicated frame at all, so the ordering hazard cannot arise there. Both
+functions remain public in `reader.py` for notebook and ad-hoc work on an
+already-loaded frame, which is exactly where this rule still applies.
 
 ## The rule
 

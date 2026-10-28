@@ -26,9 +26,15 @@ not contain twenty copies of turn one.
 
 ## Where it bites
 
-`build_sessions` in [[upstream/session-reconstruction]] aggregates with
-`total_spend=sum` and `total_tokens=sum` over the session's requests. For a long
-agentic session those sums grow roughly quadratically in turn count.
+Session grouping sums `total_spend` and `total_tokens` over the session's
+requests — `_scan_and_write_blocks` in [[upstream/session-reconstruction]]
+accumulates both per record as it scans. For a long agentic session those sums
+grow roughly quadratically in turn count.
+
+The sum now includes records that yield no content blocks (empty message lists,
+Responses-API replies the reader cannot parse). They were billed, so they
+belong in the total, but it means spend no longer reconciles against the blocks
+present in the output.
 
 The failure modes are specific:
 

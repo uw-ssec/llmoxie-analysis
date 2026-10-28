@@ -4,11 +4,18 @@ title: reader.py — Flattening Requests to Message Blocks
 description: "The upstream module that explodes each gateway request into one row per content block, including the end_user parsing that session identity depends on."
 tags: [reader, flattening, pandas, upstream, dataframe]
 generated: { by: "claude-code:claude-fable-5-1", at: "2026-09-19T00:10:18Z" }
-code_refs: [reference/llmoxie/src/llmaven/data/reader.py]
+code_refs: [src/llmoxie_analysis/data/reader.py, reference/llmoxie/src/llmaven/data/reader.py]
 sources:
   - resource: reference/llmoxie/src/llmaven/data/reader.py (440 lines)
   - resource: "reference/llmoxie commit 3e9a694, PR #167, 2026-09-18"
 ---
+
+!!! note "This code now lives in `src/`"
+
+    These modules were moved into `src/llmoxie_analysis/data/` from
+    `uw-ssec/llmoxie`. They were lifted, not rewritten, so everything below
+    still describes live behavior — read "upstream" here as where the code
+    came from, not where it is. See [[project/current-state]].
 
 `src/llmaven/data/reader.py` in the upstream repo is the layer that turns a
 LiteLLM spend-log record into a tabular DataFrame — one row per _content block_,
@@ -138,9 +145,13 @@ it was last resent.
 
 ## Utilities
 
-`flatten_value(value)`, `get_value(record, keys)`, `inspect_keys(data, keys)`,
-and `normalize_model_name(model)` — the last of which is significant enough to
-have its own note, [[upstream/model-name-normalization]].
+`normalize_model_name(model)`, significant enough to have its own note,
+[[upstream/model-name-normalization]].
+
+The upstream module also carries `flatten_value(value)`, `get_value(record,
+keys)` and `inspect_keys(data, keys)` — ad-hoc exploration helpers that nothing
+in this repo ever called. They were deleted from the `src/` copy on
+2026-10-14; look upstream if you need them back.
 
 ## Related Concepts
 

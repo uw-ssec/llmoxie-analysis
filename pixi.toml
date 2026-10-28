@@ -29,6 +29,7 @@ llmoxie-analysis = { path = ".", editable = true }
 # The main project tasks
 [tasks]
 test = { cmd = "pytest", description = "Run the test suite with pytest" }
+group-sessions = { cmd = "python -m llmoxie_analysis.data.group_sessions", description = "Group raw LiteLLM request logs into per-session conversations" }
 lint = { cmd = "ruff check . && ruff format --check .", description = "Lint and check formatting with ruff (no changes made)" }
 typecheck = { cmd = "mypy", description = "Type-check src/ and tests/ with mypy (strict)" }
 build = { cmd = "python -m build --wheel --sdist --no-isolation --outdir dist", description = "Build the wheel and sdist into dist/" }
