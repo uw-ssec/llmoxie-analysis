@@ -10,6 +10,7 @@ import json
 import logging
 import re
 from collections.abc import Iterable, Iterator
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -147,6 +148,35 @@ def _iter_blocks(content: Any) -> Iterator[dict[str, Any] | str]:
         yield from content
 
 
+def _iter_message_blocks(message: dict[str, Any]) -> Iterator[dict[str, Any] | str]:
+    """Yield normalized content and tool-call blocks from one message."""
+    if message.get("role") == "tool" and message.get("tool_call_id") is not None:
+        yield {
+            "type": "tool_result",
+            "tool_use_id": message["tool_call_id"],
+            "content": message.get("content"),
+        }
+    else:
+        yield from _iter_blocks(message.get("content"))
+
+    for tool_call in message.get("tool_calls") or []:
+        if not isinstance(tool_call, dict):
+            continue
+        function = tool_call.get("function") or {}
+        if not isinstance(function, dict):
+            continue
+        arguments = function.get("arguments")
+        if isinstance(arguments, str):
+            with suppress(json.JSONDecodeError):
+                arguments = json.loads(arguments)
+        yield {
+            "type": "tool_use",
+            "id": tool_call.get("id"),
+            "name": function.get("name"),
+            "input": arguments,
+        }
+
+
 def _rows_from_record(
     record: dict[str, Any], *, include_thinking: bool, include_tool_use: bool
 ) -> list[dict[str, Any]]:
@@ -160,7 +190,7 @@ def _rows_from_record(
 
     def _add(direction: str, msg_idx: int | None, role: str, content: Any) -> None:
         """Append every surviving block row of one message's content."""
-        for block_idx, block in enumerate(_iter_blocks(content)):
+        for block_idx, block in enumerate(_iter_message_blocks(content)):
             row = _row_from_block(base, direction, msg_idx, role, block_idx, block, **kwargs)
             if row is not None:
                 rows.append(row)
@@ -168,7 +198,7 @@ def _rows_from_record(
     # ── Input messages ────────────────────────────────────────────
     messages = record.get("proxy_server_request", {}).get("messages", [])
     for msg_idx, message in enumerate(messages):
-        _add("input", msg_idx, message.get("role", ""), message.get("content", ""))
+        _add("input", msg_idx, message.get("role", ""), message)
 
     # ── Output message ────────────────────────────────────────────
     out_msg = None
@@ -188,7 +218,7 @@ def _rows_from_record(
             "output",
             None,
             out_msg.get("role", "assistant"),
-            out_msg.get("content", ""),
+            out_msg,
         )
     elif not messages:
         logger.warning(

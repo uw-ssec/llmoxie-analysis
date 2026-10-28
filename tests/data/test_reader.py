@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any
 
@@ -217,6 +218,70 @@ class TestLoadMessagesFromRecords:
         assert len(output_rows) == 1
         assert output_rows.iloc[0]["text"] == "hi there"
         assert output_rows.iloc[0]["role"] == "assistant"
+
+    def test_preserves_chat_completion_tool_calls_and_results(self) -> None:
+        record = {
+            "request_id": "r1",
+            "proxy_server_request": {
+                "messages": [
+                    {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [
+                            {
+                                "id": "call-input",
+                                "type": "function",
+                                "function": {
+                                    "name": "lookup",
+                                    "arguments": '{"key": "value"}',
+                                },
+                            }
+                        ],
+                    },
+                    {
+                        "role": "tool",
+                        "tool_call_id": "call-input",
+                        "content": "result",
+                    },
+                ]
+            },
+            "response": {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "id": "call-output",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "finish",
+                                        "arguments": "{}",
+                                    },
+                                }
+                            ],
+                        }
+                    }
+                ]
+            },
+        }
+
+        df = load_messages_from_records([record])
+        tool_uses = df[df["type"] == "tool_use"].set_index("direction")
+        assert tool_uses.loc["input", "tool_use_id"] == "call-input"
+        assert tool_uses.loc["input", "tool_name"] == "lookup"
+        assert json.loads(tool_uses.loc["input", "tool_input"]) == {"key": "value"}
+        assert tool_uses.loc["output", "tool_use_id"] == "call-output"
+        assert tool_uses.loc["output", "tool_name"] == "finish"
+        assert json.loads(tool_uses.loc["output", "tool_input"]) == {}
+
+        tool_result = df[df["type"] == "tool_result"].iloc[0]
+        assert json.loads(tool_result["text"]) == {
+            "type": "tool_result",
+            "tool_use_id": "call-input",
+            "content": "result",
+        }
 
     def test_missing_response_choices_logs_warning_not_crash(self, caplog: pytest.LogCaptureFixture) -> None:
         record = {
