@@ -640,6 +640,12 @@ def main() -> None:
     )
     args = parser.parse_args()
     output = args.output or Path(f"sessions.{args.format}")
+    if args.parquet_cache is not None:
+        cache = args.parquet_cache
+        cache_stats = cache.with_suffix(cache.suffix + ".stats.json")
+        if output.resolve() in (cache.resolve(), cache_stats.resolve()):
+            msg = "Output must differ from the Parquet cache and its stats sidecar"
+            raise SystemExit(msg)
     if output.exists():
         msg = f"{output} already exists, pass a different -o/--output to avoid overwriting it"
         raise SystemExit(msg)
